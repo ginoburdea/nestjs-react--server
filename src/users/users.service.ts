@@ -49,4 +49,12 @@ export class UsersService {
     });
     return token;
   }
+
+  async register(data: RegisterBody) {
+    this.validateMasterPassword(data.masterPassword);
+    const user = await this.createUser(data);
+    const token = this.generateToken(user.id);
+
+    return { user, token };
+  }
 }
