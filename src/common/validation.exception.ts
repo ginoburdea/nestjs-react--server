@@ -2,6 +2,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 export const validationMessages = {
   INVALID_MASTER_PASSWORD: 'Parola master este incorrecta',
+  EMAIL_IN_USE: 'Emailul este deja asociat cu un cont',
 };
 
 export type ValidationExceptionCode = keyof typeof validationMessages;
