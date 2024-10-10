@@ -10,6 +10,8 @@ describe('UsersService', () => {
   let service: UsersService;
 
   beforeEach(async () => {
+    jest.resetAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [UsersService, PrismaService],
     }).compile();
@@ -91,6 +93,35 @@ describe('UsersService', () => {
           subject: '' + userId,
         }),
       ).not.toThrow();
+    });
+  });
+
+  describe('register', () => {
+    it('Should validate the master password, create a user and generate a token', async () => {
+      const userData = {
+        name: new Chance().name(),
+        email: new Chance().email(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: new Chance().string({ length: 16 }),
+      };
+
+      const validateMasterPassword = jest
+        .spyOn(service as any, 'validateMasterPassword')
+        .mockReturnValue(undefined);
+
+      const createUser = jest
+        .spyOn(service as any, 'createUser')
+        .mockReturnValue({});
+
+      const generateToken = jest
+        .spyOn(service as any, 'generateToken')
+        .mockReturnValue('');
+
+      await service['register'](userData);
+
+      expect(validateMasterPassword).toHaveBeenCalled();
+      expect(createUser).toHaveBeenCalled();
+      expect(generateToken).toHaveBeenCalled();
     });
   });
 });
