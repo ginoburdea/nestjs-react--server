@@ -86,7 +86,6 @@ describe('UsersService', () => {
       const userId = new Chance().integer({ min: 1, max: 1000 });
 
       const { token, expiresAt } = service['generateToken'](userId);
-      console.log(token, expiresAt);
 
       expect(expiresAt).toBeInstanceOf(Date);
 
