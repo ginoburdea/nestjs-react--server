@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-const validationMessages = {};
+const validationMessages = {
+  INVALID_MASTER_PASSWORD: 'Parola master este incorrecta',
+};
 
 export class ValidationException extends HttpException {
   description =
