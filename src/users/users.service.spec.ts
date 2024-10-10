@@ -4,6 +4,7 @@ import { Chance } from 'chance';
 import { PrismaService } from '../common/prisma.service';
 import { expectValidationError } from '../test-utils/expectValidationError';
 import { truncateAllTables } from '../test-utils/truncateAllTables';
+import { verify as verifyJwt } from 'jsonwebtoken';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -73,6 +74,23 @@ describe('UsersService', () => {
       await expectValidationError('email', 'EMAIL_IN_USE', () =>
         service['createUser'](userData),
       );
+    });
+  });
+
+  describe('generateToken', () => {
+    it('Should generate a token', async () => {
+      const jwtSecret = new Chance().string({ length: 32 });
+      process.env.JWT_SIGNING_KEY = jwtSecret;
+      const userId = new Chance().integer({ min: 1, max: 1000 });
+
+      const token = service['generateToken'](userId);
+
+      expect(() =>
+        verifyJwt(token, jwtSecret, {
+          algorithms: ['HS256'],
+          subject: '' + userId,
+        }),
+      ).not.toThrow();
     });
   });
 });
