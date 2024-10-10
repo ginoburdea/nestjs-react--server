@@ -85,7 +85,10 @@ describe('UsersService', () => {
       process.env.JWT_SIGNING_KEY = jwtSecret;
       const userId = new Chance().integer({ min: 1, max: 1000 });
 
-      const token = service['generateToken'](userId);
+      const { token, expiresAt } = service['generateToken'](userId);
+      console.log(token, expiresAt);
+
+      expect(expiresAt).toBeInstanceOf(Date);
 
       expect(() =>
         verifyJwt(token, jwtSecret, {

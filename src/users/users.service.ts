@@ -5,6 +5,7 @@ import { RegisterBody } from './dto/register.dto';
 import { hash } from 'bcrypt';
 import { sign as signJwt } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
+import ms from 'ms';
 
 @Injectable()
 export class UsersService {
@@ -47,14 +48,18 @@ export class UsersService {
       keyid: randomBytes(64).toString('base64'),
       expiresIn: '30 days',
     });
-    return token;
+
+    // subtract 5000 ms to account for eventual delays
+    const expiresAt = new Date(Date.now() + ms('30 days') - 5000);
+
+    return { token, expiresAt };
   }
 
   async register(data: RegisterBody) {
     this.validateMasterPassword(data.masterPassword);
     const user = await this.createUser(data);
-    const token = this.generateToken(user.id);
+    const { token, expiresAt: tokenExpiresAt } = this.generateToken(user.id);
 
-    return { user, token };
+    return { user, token, tokenExpiresAt };
   }
 }
