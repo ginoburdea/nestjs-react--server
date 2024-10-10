@@ -1,8 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-const validationMessages = {
+export const validationMessages = {
   INVALID_MASTER_PASSWORD: 'Parola master este incorrecta',
 };
+
+export type ValidationExceptionCode = keyof typeof validationMessages;
 
 export class ValidationException extends HttpException {
   description =
@@ -15,7 +17,7 @@ export class ValidationException extends HttpException {
     super('Eroare de validare', httpStatus);
   }
 
-  static fromCode(code: keyof typeof validationMessages, field: string) {
+  static fromCode(code: ValidationExceptionCode, field: string) {
     return new this(400, { [field]: validationMessages[code] });
   }
 }
