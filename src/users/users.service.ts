@@ -3,6 +3,8 @@ import { PrismaService } from '../common/prisma.service';
 import { ValidationException } from '../common/validation.exception';
 import { RegisterBody } from './dto/register.dto';
 import { hash } from 'bcrypt';
+import { sign as signJwt } from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -36,5 +38,15 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  private generateToken(userId: number) {
+    const token = signJwt({}, process.env.JWT_SIGNING_KEY, {
+      subject: userId.toString(),
+      algorithm: 'HS256',
+      keyid: randomBytes(64).toString('base64'),
+      expiresIn: '30 days',
+    });
+    return token;
   }
 }
