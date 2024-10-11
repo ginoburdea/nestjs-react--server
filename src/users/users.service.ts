@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationException } from '../common/validation.exception';
 import { RegisterBody } from './dto/register.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { sign as signJwt } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import ms from 'ms';
+import { LoginBody } from './dto/login.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,28 @@ export class UsersService {
         'masterPassword',
       );
     }
+  }
+
+  private async validateCredentials(email: string, password: string) {
+    const user = await this.prisma.users.findFirst({
+      where: { email },
+    });
+    if (!user) {
+      throw ValidationException.fromCode('INVALID_CREDENTIALS', [
+        'email',
+        'password',
+      ]);
+    }
+
+    const passwordIsCorrect = await compare(password, user.password);
+    if (!passwordIsCorrect) {
+      throw ValidationException.fromCode('INVALID_CREDENTIALS', [
+        'email',
+        'password',
+      ]);
+    }
+
+    return user;
   }
 
   private async createUser(data: Omit<RegisterBody, 'masterPassword'>) {
@@ -58,6 +81,13 @@ export class UsersService {
   async register(data: RegisterBody) {
     this.validateMasterPassword(data.masterPassword);
     const user = await this.createUser(data);
+    const { token, expiresAt: tokenExpiresAt } = this.generateToken(user.id);
+
+    return { user, token, tokenExpiresAt };
+  }
+
+  async login(data: LoginBody) {
+    const user = await this.validateCredentials(data.email, data.password);
     const { token, expiresAt: tokenExpiresAt } = this.generateToken(user.id);
 
     return { user, token, tokenExpiresAt };

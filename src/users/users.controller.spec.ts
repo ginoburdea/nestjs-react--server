@@ -36,4 +36,23 @@ describe('UsersController', () => {
       expect(sendAuthRes).toHaveBeenCalled();
     });
   });
+
+  describe('login', () => {
+    it('Should call the login user service and the send auth response function', async () => {
+      const login = jest
+        .spyOn(usersService as any, 'login')
+        .mockResolvedValue({});
+      const sendAuthRes = jest
+        .spyOn(controller as any, 'sendAuthRes')
+        .mockResolvedValue(undefined);
+
+      const body = {};
+      const res = {};
+
+      await controller.login(body as any, res as any);
+
+      expect(login).toHaveBeenCalled();
+      expect(sendAuthRes).toHaveBeenCalled();
+    });
+  });
 });

@@ -4,6 +4,7 @@ import { loadApp } from '../src/loaders/loadApp';
 import { Chance } from 'chance';
 import { Server } from 'http';
 import Cookies from 'expect-cookies';
+import { UsersService } from '../src/users/users.service';
 
 describe('/users', () => {
   let app: INestApplication;
@@ -33,10 +34,25 @@ describe('/users', () => {
       await request(server)
         .post('/users/register')
         .send(body)
-        .expect(200, {
-          name: body.name,
-          email: body.email,
-        })
+        .expect(200, { name: body.name, email: body.email })
+        .expect(Cookies.set({ name: 'access_token' }));
+    });
+  });
+
+  describe(`POST /login`, () => {
+    it('Should login a user', async () => {
+      const body = {
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+      };
+      const usersService = app.get<UsersService>(UsersService);
+      await usersService['createUser'](body);
+
+      await request(server)
+        .post('/users/login')
+        .send(body)
+        .expect(200, { name: body.name, email: body.email })
         .expect(Cookies.set({ name: 'access_token' }));
     });
   });
