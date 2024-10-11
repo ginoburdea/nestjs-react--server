@@ -1,5 +1,5 @@
 import { HttpStatus, ValidationPipeOptions } from '@nestjs/common';
-import { ValidationException } from 'src/common/validation.exception';
+import { ValidationException } from '../common/validation.exception';
 
 export const validationPipeConfig: ValidationPipeOptions = {
   whitelist: true,
