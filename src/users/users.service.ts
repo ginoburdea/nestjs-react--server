@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationException } from '../common/validation.exception';
 import { RegisterBody } from './dto/register.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { sign as signJwt } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import ms from 'ms';
@@ -18,6 +18,28 @@ export class UsersService {
         'masterPassword',
       );
     }
+  }
+
+  private async validateCredentials(email: string, password: string) {
+    const user = await this.prisma.users.findFirst({
+      where: { email },
+    });
+    if (!user) {
+      throw ValidationException.fromCode('INVALID_CREDENTIALS', [
+        'email',
+        'password',
+      ]);
+    }
+
+    const passwordIsCorrect = await compare(password, user.password);
+    if (!passwordIsCorrect) {
+      throw ValidationException.fromCode('INVALID_CREDENTIALS', [
+        'email',
+        'password',
+      ]);
+    }
+
+    return user;
   }
 
   private async createUser(data: Omit<RegisterBody, 'masterPassword'>) {
