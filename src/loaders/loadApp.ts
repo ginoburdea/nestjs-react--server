@@ -10,5 +10,9 @@ export const loadApp = async () => {
   server.useGlobalPipes(new ValidationPipe(validationPipeConfig));
   server.useGlobalFilters(new CustomExceptionFilter());
 
+  if (process.env.NODE_ENV !== 'production') {
+    server.enableCors({ origin: '*' });
+  }
+
   return server;
 };
