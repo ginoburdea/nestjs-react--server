@@ -6,6 +6,7 @@ import { compare, hash } from 'bcrypt';
 import { sign as signJwt } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import ms from 'ms';
+import { LoginBody } from './dto/login.dto';
 
 @Injectable()
 export class UsersService {
@@ -80,6 +81,13 @@ export class UsersService {
   async register(data: RegisterBody) {
     this.validateMasterPassword(data.masterPassword);
     const user = await this.createUser(data);
+    const { token, expiresAt: tokenExpiresAt } = this.generateToken(user.id);
+
+    return { user, token, tokenExpiresAt };
+  }
+
+  async login(data: LoginBody) {
+    const user = await this.validateCredentials(data.email, data.password);
     const { token, expiresAt: tokenExpiresAt } = this.generateToken(user.id);
 
     return { user, token, tokenExpiresAt };
