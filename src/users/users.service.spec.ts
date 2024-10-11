@@ -178,4 +178,26 @@ describe('UsersService', () => {
       expect(generateToken).toHaveBeenCalled();
     });
   });
+
+  describe('login', () => {
+    it('Should validate the credentials and generate a token', async () => {
+      const userData = {
+        email: new Chance().email(),
+        password: new Chance().string({ length: 16 }),
+      };
+
+      const validateCredentials = jest
+        .spyOn(service as any, 'validateCredentials')
+        .mockReturnValue({});
+
+      const generateToken = jest
+        .spyOn(service as any, 'generateToken')
+        .mockReturnValue('');
+
+      await service['login'](userData);
+
+      expect(validateCredentials).toHaveBeenCalled();
+      expect(generateToken).toHaveBeenCalled();
+    });
+  });
 });
