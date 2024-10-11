@@ -20,6 +20,7 @@ export class UsersController {
         secure: process.env.NODE_ENV === 'production',
         expires: tokenExpiresAt,
       })
+      .status(200)
       .send({
         name: user.name,
         email: user.email,
