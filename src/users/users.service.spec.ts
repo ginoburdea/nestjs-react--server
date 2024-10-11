@@ -44,6 +44,58 @@ describe('UsersService', () => {
     });
   });
 
+  describe('validateCredentials', () => {
+    it('Should return the user if the credentials are valid', async () => {
+      const userData = {
+        name: new Chance().name(),
+        email: new Chance().email(),
+        password: new Chance().string({ length: 16 }),
+      };
+      await service['createUser'](userData);
+
+      const user = await service['validateCredentials'](
+        userData.email,
+        userData.password,
+      );
+
+      expect(user).toMatchObject({
+        email: userData.email,
+      });
+    });
+
+    it('Should throw if the email is incorrect', async () => {
+      const userData = {
+        name: new Chance().name(),
+        email: new Chance().email(),
+        password: new Chance().string({ length: 16 }),
+      };
+
+      await expectValidationError('email', 'INVALID_CREDENTIALS', () =>
+        service['validateCredentials'](userData.email, userData.password),
+      );
+      await expectValidationError('password', 'INVALID_CREDENTIALS', () =>
+        service['validateCredentials'](userData.email, userData.password),
+      );
+    });
+
+    it('Should throw if the password is incorrect', async () => {
+      const userData = {
+        name: new Chance().name(),
+        email: new Chance().email(),
+        password: new Chance().string({ length: 16 }),
+      };
+      await service['createUser'](userData);
+      const incorrectPassword = new Chance().string({ length: 16 });
+
+      await expectValidationError('email', 'INVALID_CREDENTIALS', () =>
+        service['validateCredentials'](userData.email, incorrectPassword),
+      );
+      await expectValidationError('password', 'INVALID_CREDENTIALS', () =>
+        service['validateCredentials'](userData.email, incorrectPassword),
+      );
+    });
+  });
+
   describe('createUser', () => {
     it('Should create a user when the email is not in use', async () => {
       const userData = {
