@@ -18,7 +18,14 @@ export class ValidationException extends HttpException {
     super('Eroare de validare', httpStatus);
   }
 
-  static fromCode(code: ValidationExceptionCode, field: string) {
-    return new this(400, { [field]: validationMessages[code] });
+  static fromCode(code: ValidationExceptionCode, field: string | string[]) {
+    const details = [field].flat().reduce(
+      (details, field) => ({
+        ...details,
+        [field]: validationMessages[code],
+      }),
+      {},
+    );
+    return new this(400, details);
   }
 }
