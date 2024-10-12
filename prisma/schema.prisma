@@ -16,3 +16,13 @@ model Users {
   email    String @unique
   password String
 }
+
+model Projects {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  url         String
+  description String?
+}
