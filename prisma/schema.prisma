@@ -25,4 +25,17 @@ model Projects {
   name        String
   url         String
   description String?
+
+  photos ProjectPhotos[]
+}
+
+model ProjectPhotos {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  projectId Int
+  project   Projects @relation(fields: [projectId], references: [id])
 }
