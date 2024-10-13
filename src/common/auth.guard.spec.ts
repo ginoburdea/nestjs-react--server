@@ -44,4 +44,64 @@ describe('AuthGuard', () => {
       expect(token).toEqual('');
     });
   });
+
+  describe('validateUserId', () => {
+    it('Should throw if the given id is not a string', async () => {
+      const id = new Date();
+
+      let errors = 0;
+      try {
+        await authGuard['validateUserId'](id);
+      } catch (error) {
+        errors++;
+        expect(error.message).toEqual('id must be a numeric string');
+      }
+      expect(errors).toEqual(1);
+    });
+
+    it('Should throw if the given id is not a numeric string', async () => {
+      const id = new Chance().string({ length: 16 });
+
+      let errors = 0;
+      try {
+        await authGuard['validateUserId'](id);
+      } catch (error) {
+        errors++;
+        expect(error.message).toEqual('id must be a numeric string');
+      }
+      expect(errors).toEqual(1);
+    });
+
+    it('Should throw if the user was not found', async () => {
+      const id = new Chance().string({ length: 3, numeric: true });
+
+      let errors = 0;
+      try {
+        await authGuard['validateUserId'](id);
+      } catch (error) {
+        errors++;
+        expect(error.message).toEqual('user not found');
+      }
+      expect(errors).toEqual(1);
+    });
+
+    it('Should not throw if the user was found', async () => {
+      const user = await authGuard['prisma'].users.create({
+        data: {
+          name: 'John Doe',
+          email: 'john.doe@test.com',
+          password: 'password123',
+        },
+      });
+      const id = user.id.toString();
+
+      let errors = 0;
+      try {
+        await authGuard['validateUserId'](id);
+      } catch (error) {
+        errors++;
+      }
+      expect(errors).toEqual(0);
+    });
+  });
 });
