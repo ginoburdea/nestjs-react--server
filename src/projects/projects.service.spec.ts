@@ -52,4 +52,35 @@ describe('ProjectsService', () => {
       expect(createdPhotosInDb).toEqual(photosLength);
     });
   });
+
+  describe('createProject', () => {
+    it('Should create a project and upload the photos', async () => {
+      const photosLength = new Chance().integer({ min: 1, max: 5 });
+
+      const data = {
+        name: new Chance().string({ length: 32 }),
+        url: new Chance().url(),
+        photos: new Array(photosLength).fill({
+          content: readFileSync(resolve('test/data/photo.png')),
+          mimeType: 'image/png',
+        }),
+      };
+
+      const uploadPhotos = jest
+        .spyOn(service as any, 'uploadPhotos')
+        .mockReturnValue(undefined);
+
+      const project = await service['createProject'](data);
+
+      expect(uploadPhotos).toHaveBeenCalled();
+
+      const createdProjectInDb = await service['prisma'].projects.findFirst({
+        where: { id: project.id },
+      });
+      expect(createdProjectInDb).toMatchObject({
+        name: data.name,
+        url: data.url,
+      });
+    });
+  });
 });
