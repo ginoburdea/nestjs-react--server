@@ -4,11 +4,13 @@ import {
   HttpCode,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProjectBody } from './dto/create.dto';
+import { AuthGuard } from 'src/common/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
@@ -16,6 +18,7 @@ export class ProjectsController {
 
   @Post('')
   @HttpCode(200)
+  @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
     @UploadedFiles() photos: Express.Multer.File[],
