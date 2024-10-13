@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { FileService } from '../common/files.service';
+import { CreateProjectBody } from './dto/create.dto';
 import { randomUUID } from 'crypto';
 
 interface File {
@@ -30,5 +31,15 @@ export class ProjectsService {
     });
 
     return photosInDb;
+  }
+
+  async createProject(data: CreateProjectBody & { photos: File[] }) {
+    const project = await this.prisma.projects.create({
+      data: { name: data.name, url: data.url },
+    });
+
+    await this.uploadPhotos(project.id, data.photos);
+
+    return project;
   }
 }
