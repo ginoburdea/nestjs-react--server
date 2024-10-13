@@ -25,6 +25,7 @@ model Projects {
   name        String
   url         String
   description String?
+  active      Boolean @default(true)
 
   photos ProjectPhotos[]
 }
