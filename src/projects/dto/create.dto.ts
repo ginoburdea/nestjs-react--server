@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class CreateProjectBody {
   @IsString()
@@ -14,4 +14,8 @@ export class CreateProjectBody {
   @IsString()
   @Transform(({ value }) => value?.trim())
   description?: string;
+
+  @IsIn(['true', 'false'])
+  @Transform(({ value }) => value === 'true', { toPlainOnly: true })
+  active: boolean;
 }

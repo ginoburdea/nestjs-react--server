@@ -39,6 +39,7 @@ export class ProjectsService {
         name: data.name,
         url: data.url,
         description: data.description,
+        active: data.active,
       },
     });
 
