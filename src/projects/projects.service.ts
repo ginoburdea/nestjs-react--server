@@ -35,7 +35,11 @@ export class ProjectsService {
 
   async createProject(data: CreateProjectBody & { photos: File[] }) {
     const project = await this.prisma.projects.create({
-      data: { name: data.name, url: data.url },
+      data: {
+        name: data.name,
+        url: data.url,
+        description: data.description,
+      },
     });
 
     await this.uploadPhotos(project.id, data.photos);
