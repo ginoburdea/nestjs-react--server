@@ -11,10 +11,10 @@ export const loadApp = async () => {
   server.useGlobalPipes(new ValidationPipe(validationPipeConfig));
   server.useGlobalFilters(new CustomExceptionFilter());
   server.use(cookieParser());
-
-  if (process.env.NODE_ENV !== 'production') {
-    server.enableCors({ origin: '*' });
-  }
+  server.enableCors({
+    origin: process.env.CORS_ORIGINS,
+    credentials: process.env.NODE_ENV !== 'production',
+  });
 
   return server;
 };
