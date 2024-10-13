@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { ValidationException } from './validation.exception';
 
@@ -12,6 +17,14 @@ export class CustomExceptionFilter implements ExceptionFilter {
         error: exception.message,
         message: exception.description,
         details: exception.details,
+      });
+      return;
+    }
+
+    if (exception instanceof UnauthorizedException) {
+      res.status(401).json({
+        error: 'Neautorizat',
+        message: 'Trebuie sa fi logat pentru a efectua aceasta actiune',
       });
       return;
     }
