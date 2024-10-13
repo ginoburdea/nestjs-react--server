@@ -10,7 +10,7 @@ import {
 import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProjectBody } from './dto/create.dto';
-import { AuthGuard } from 'src/common/auth.guard';
+import { AuthGuard } from '../common/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
