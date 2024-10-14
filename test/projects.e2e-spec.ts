@@ -38,6 +38,7 @@ describe('/projects', () => {
         name: new Chance().string({ length: 32 }),
         url: new Chance().url(),
         description: new Chance().string({ length: 128 }),
+        active: new Chance().bool(),
       };
 
       const res = await request(server)
@@ -48,6 +49,7 @@ describe('/projects', () => {
         .field('name', project.name)
         .field('url', project.url)
         .field('description', project.description)
+        .field('active', project.active)
         .set('Cookie', `access_token=${token}`);
 
       expect(res.statusCode).toEqual(200);
