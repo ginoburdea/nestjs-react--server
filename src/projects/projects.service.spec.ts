@@ -64,6 +64,7 @@ describe('ProjectsService', () => {
           content: readFileSync(resolve('test/data/photo.png')),
           mimeType: 'image/png',
         }),
+        active: new Chance().bool(),
       };
 
       const uploadPhotos = jest
