@@ -49,7 +49,7 @@ export class ProjectsService {
     return project;
   }
 
-  private async genPaginationMeta(
+  private genPaginationMeta(
     currentPage: number,
     pageSize: number,
     totalRows: number,

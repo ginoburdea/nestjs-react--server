@@ -207,7 +207,7 @@ describe('ProjectsService', () => {
 
   describe('genPaginationMeta', () => {
     it('Should get the correct values when there are multiple pages, previous and next pages', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](2, 25, 75);
 
@@ -218,7 +218,7 @@ describe('ProjectsService', () => {
     });
 
     it('Should get the correct values when there are multiple pages and next pages', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](1, 25, 75);
 
@@ -229,7 +229,7 @@ describe('ProjectsService', () => {
     });
 
     it('Should get the correct values when there are multiple pages and previous pages', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](3, 25, 75);
 
@@ -240,7 +240,7 @@ describe('ProjectsService', () => {
     });
 
     it('Should get the correct values when is only one page', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](1, 25, 25);
 
@@ -251,7 +251,7 @@ describe('ProjectsService', () => {
     });
 
     it('Should get the correct values when there are no pages', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](1, 25, 0);
 
@@ -262,7 +262,7 @@ describe('ProjectsService', () => {
     });
 
     it('Should get the correct values when there are multiple pages and the current page is greater than the last page', async () => {
-      const { firstPage, lastPage, prevPage, nextPage } = await service[
+      const { firstPage, lastPage, prevPage, nextPage } = service[
         'genPaginationMeta'
       ](5, 25, 75);
 
