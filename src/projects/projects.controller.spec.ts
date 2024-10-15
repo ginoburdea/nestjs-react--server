@@ -36,4 +36,23 @@ describe('ProjectsController', () => {
       expect(res.id).toEqual(id);
     });
   });
+
+  describe('getProjects', () => {
+    it('Should call the getProjects project service and the send the results and meta as a result', async () => {
+      const results = new Chance().string();
+      const meta = new Chance().string();
+
+      const getProjects = jest
+        .spyOn(projectsService as any, 'getProjects')
+        .mockResolvedValue({ results, meta });
+
+      const query = {};
+
+      const res = await controller.getProjects(query as any);
+
+      expect(getProjects).toHaveBeenCalled();
+      expect(res.results).toEqual(results);
+      expect(res.meta).toEqual(meta);
+    });
+  });
 });
