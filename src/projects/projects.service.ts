@@ -49,25 +49,23 @@ export class ProjectsService {
     return project;
   }
 
-  async getProjects(filters: GetProjectsQuery) {
-    const pageSize = 25;
-
-    const projectsCount = await this.prisma.projects.count();
-    const lastPage = Math.ceil(projectsCount / pageSize);
-    const currentPage = filters.page;
+  private async genPaginationMeta(
+    currentPage: number,
+    pageSize: number,
+    totalRows: number,
+  ) {
+    const lastPage = Math.ceil(totalRows / pageSize);
     const firstPage = 1;
     const prevPage = currentPage > firstPage ? currentPage - 1 : null;
     const nextPage = currentPage < lastPage ? currentPage + 1 : null;
 
-    const meta = {
-      firstPage,
-      lastPage,
-      pageSize,
-      prevPage,
-      nextPage,
-      currentPage,
-    };
+    return { firstPage, lastPage, pageSize, prevPage, nextPage, currentPage };
+  }
 
+  private async getSimplifiedProjects(
+    pageSize: number,
+    filters: GetProjectsQuery,
+  ) {
     const projects = await this.prisma.projects.findMany({
       take: pageSize,
       skip: pageSize * (filters.page - 1),
@@ -96,6 +94,16 @@ export class ProjectsService {
       photo: project.photos[0]?.name || null,
     }));
 
-    return { results: formattedProjects, meta };
+    return formattedProjects;
+  }
+
+  async getProjects(filters: GetProjectsQuery) {
+    const pageSize = 25;
+
+    const projectsCount = await this.prisma.projects.count();
+    const meta = this.genPaginationMeta(filters.page, pageSize, projectsCount);
+    const projects = await this.getSimplifiedProjects(pageSize, filters);
+
+    return { results: projects, meta };
   }
 }
