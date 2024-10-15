@@ -272,4 +272,27 @@ describe('ProjectsService', () => {
       expect(nextPage).toEqual(null);
     });
   });
+
+  describe('getProjects', () => {
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions', async () => {
+      const data = {
+        order: new Chance().pickone(['newest', 'oldest']) as
+          | 'newest'
+          | 'oldest',
+        page: new Chance().integer({ min: 1, max: 1000 }),
+      };
+
+      const genPaginationMeta = jest
+        .spyOn(service as any, 'genPaginationMeta')
+        .mockReturnValue({});
+      const getSimplifiedProjects = jest
+        .spyOn(service as any, 'getSimplifiedProjects')
+        .mockReturnValue({});
+
+      await service['getProjects'](data);
+
+      expect(genPaginationMeta).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalled();
+    });
+  });
 });
