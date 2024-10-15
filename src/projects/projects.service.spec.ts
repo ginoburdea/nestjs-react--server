@@ -84,4 +84,124 @@ describe('ProjectsService', () => {
       });
     });
   });
+
+  describe('getSimplifiedProjects', () => {
+    it('Should get projects and a photo for each one', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const createdProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+      });
+      await service['prisma'].projectPhotos.createMany({
+        data: createdProjects
+          .map((project) => project.id)
+          .map((projectId) => ({
+            projectId,
+            name:
+              new Chance().string({ length: 8, alpha: true, numeric: true }) +
+              '.png',
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'newest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount);
+      for (const project of simplifiedProjects) {
+        expect(typeof project.photo).toEqual('string');
+      }
+    });
+
+    it('Should get projects and null instead of photos', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'newest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount);
+      for (const project of simplifiedProjects) {
+        expect(project.photo).toBeNull();
+      }
+    });
+
+    it('Should get projects on the first page', async () => {
+      const projectsCount = new Chance().integer({ min: 30, max: 50 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const allProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'oldest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(25);
+      expect(simplifiedProjects[0].id).toEqual(allProjects[0].id);
+      expect(simplifiedProjects[24].id).toEqual(allProjects[24].id);
+    });
+
+    it('Should get projects on the second page', async () => {
+      const projectsCount = new Chance().integer({ min: 30, max: 50 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const allProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 2,
+        order: 'oldest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount - 25);
+      expect(simplifiedProjects[0].id).toEqual(allProjects[25].id);
+      expect(simplifiedProjects.at(-1).id).toEqual(allProjects.at(-1).id);
+    });
+  });
 });
