@@ -54,9 +54,10 @@ export class ProjectsService {
     pageSize: number,
     totalRows: number,
   ) {
-    const lastPage = Math.ceil(totalRows / pageSize);
     const firstPage = 1;
-    const prevPage = currentPage > firstPage ? currentPage - 1 : null;
+    const lastPage = Math.max(Math.ceil(totalRows / pageSize), firstPage);
+    const prevPage =
+      currentPage > firstPage ? Math.max(currentPage - 1, firstPage) : null;
     const nextPage = currentPage < lastPage ? currentPage + 1 : null;
 
     return { firstPage, lastPage, pageSize, prevPage, nextPage, currentPage };

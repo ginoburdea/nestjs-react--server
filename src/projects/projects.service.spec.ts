@@ -204,4 +204,72 @@ describe('ProjectsService', () => {
       expect(simplifiedProjects.at(-1).id).toEqual(allProjects.at(-1).id);
     });
   });
+
+  describe('genPaginationMeta', () => {
+    it('Should get the correct values when there are multiple pages, previous and next pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](2, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(1);
+      expect(nextPage).toEqual(3);
+    });
+
+    it('Should get the correct values when there are multiple pages and next pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](1, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(2);
+    });
+
+    it('Should get the correct values when there are multiple pages and previous pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](3, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(2);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when is only one page', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](1, 25, 25);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(1);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when there are no pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](1, 25, 0);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(1);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when there are multiple pages and the current page is greater than the last page', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = await service[
+        'genPaginationMeta'
+      ](5, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(4);
+      expect(nextPage).toEqual(null);
+    });
+  });
 });
