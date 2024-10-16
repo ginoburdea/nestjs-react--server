@@ -100,8 +100,6 @@ describe('/projects', () => {
         })
         .set('Cookie', `access_token=${token}`);
 
-      console.log(res.body);
-
       expect(res.statusCode).toEqual(200);
       expect(res.body.meta).toMatchObject({
         currentPage: 1,
