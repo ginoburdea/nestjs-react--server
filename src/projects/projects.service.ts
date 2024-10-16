@@ -3,6 +3,7 @@ import { PrismaService } from '../common/prisma.service';
 import { FileService } from '../common/files.service';
 import { CreateProjectBody } from './dto/create.dto';
 import { randomUUID } from 'crypto';
+import { GetProjectsQuery } from './dto/get.dto';
 
 interface File {
   content: Buffer;
@@ -46,5 +47,73 @@ export class ProjectsService {
     await this.uploadPhotos(project.id, data.photos);
 
     return project;
+  }
+
+  private genPaginationMeta(
+    currentPage: number,
+    pageSize: number,
+    totalRows: number,
+  ) {
+    const firstPage = 1;
+    const lastPage = Math.max(Math.ceil(totalRows / pageSize), firstPage);
+    const prevPage =
+      currentPage > firstPage ? Math.max(currentPage - 1, firstPage) : null;
+    const nextPage = currentPage < lastPage ? currentPage + 1 : null;
+
+    return { firstPage, lastPage, pageSize, prevPage, nextPage, currentPage };
+  }
+
+  private getPhotoUrl = (photoName: string) => {
+    if (process.env.NODE_ENV === 'production') {
+      return process.env.S3_PUBLIC_URL + '/' + photoName;
+    }
+    return `http://localhost:3000/uploads/${photoName}`;
+  };
+
+  private async getSimplifiedProjects(
+    pageSize: number,
+    filters: GetProjectsQuery,
+  ) {
+    const projects = await this.prisma.projects.findMany({
+      take: pageSize,
+      skip: pageSize * (filters.page - 1),
+      select: {
+        id: true,
+        active: true,
+        name: true,
+        photos: {
+          select: {
+            name: true,
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: filters.order === 'oldest' ? 'asc' : 'desc',
+      },
+    });
+
+    const formattedProjects = projects.map((project) => ({
+      ...project,
+      photos: undefined,
+      photo: project.photos[0]?.name
+        ? this.getPhotoUrl(project.photos[0].name)
+        : null,
+    }));
+
+    return formattedProjects;
+  }
+
+  async getProjects(filters: GetProjectsQuery) {
+    const pageSize = 25;
+
+    const projectsCount = await this.prisma.projects.count();
+    const meta = this.genPaginationMeta(filters.page, pageSize, projectsCount);
+    const projects = await this.getSimplifiedProjects(pageSize, filters);
+
+    return { results: projects, meta };
   }
 }

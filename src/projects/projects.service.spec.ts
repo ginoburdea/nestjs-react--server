@@ -84,4 +84,215 @@ describe('ProjectsService', () => {
       });
     });
   });
+
+  describe('getSimplifiedProjects', () => {
+    it('Should get projects and a photo for each one', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const createdProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+      });
+      await service['prisma'].projectPhotos.createMany({
+        data: createdProjects
+          .map((project) => project.id)
+          .map((projectId) => ({
+            projectId,
+            name:
+              new Chance().string({ length: 8, alpha: true, numeric: true }) +
+              '.png',
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'newest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount);
+      for (const project of simplifiedProjects) {
+        expect(typeof project.photo).toEqual('string');
+      }
+    });
+
+    it('Should get projects and null instead of photos', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'newest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount);
+      for (const project of simplifiedProjects) {
+        expect(project.photo).toBeNull();
+      }
+    });
+
+    it('Should get projects on the first page', async () => {
+      const projectsCount = new Chance().integer({ min: 30, max: 50 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const allProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 1,
+        order: 'oldest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(25);
+      expect(simplifiedProjects[0].id).toEqual(allProjects[0].id);
+      expect(simplifiedProjects[24].id).toEqual(allProjects[24].id);
+    });
+
+    it('Should get projects on the second page', async () => {
+      const projectsCount = new Chance().integer({ min: 30, max: 50 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const allProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
+        page: 2,
+        order: 'oldest',
+      });
+
+      expect(simplifiedProjects).toHaveLength(projectsCount - 25);
+      expect(simplifiedProjects[0].id).toEqual(allProjects[25].id);
+      expect(simplifiedProjects.at(-1).id).toEqual(allProjects.at(-1).id);
+    });
+  });
+
+  describe('genPaginationMeta', () => {
+    it('Should get the correct values when there are multiple pages, previous and next pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](2, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(1);
+      expect(nextPage).toEqual(3);
+    });
+
+    it('Should get the correct values when there are multiple pages and next pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](1, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(2);
+    });
+
+    it('Should get the correct values when there are multiple pages and previous pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](3, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(2);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when is only one page', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](1, 25, 25);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(1);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when there are no pages', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](1, 25, 0);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(1);
+      expect(prevPage).toEqual(null);
+      expect(nextPage).toEqual(null);
+    });
+
+    it('Should get the correct values when there are multiple pages and the current page is greater than the last page', async () => {
+      const { firstPage, lastPage, prevPage, nextPage } = service[
+        'genPaginationMeta'
+      ](5, 25, 75);
+
+      expect(firstPage).toEqual(1);
+      expect(lastPage).toEqual(3);
+      expect(prevPage).toEqual(4);
+      expect(nextPage).toEqual(null);
+    });
+  });
+
+  describe('getProjects', () => {
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions', async () => {
+      const data = {
+        order: new Chance().pickone(['newest', 'oldest']) as
+          | 'newest'
+          | 'oldest',
+        page: new Chance().integer({ min: 1, max: 1000 }),
+      };
+
+      const genPaginationMeta = jest
+        .spyOn(service as any, 'genPaginationMeta')
+        .mockReturnValue({});
+      const getSimplifiedProjects = jest
+        .spyOn(service as any, 'getSimplifiedProjects')
+        .mockReturnValue({});
+
+      await service['getProjects'](data);
+
+      expect(genPaginationMeta).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalled();
+    });
+  });
 });
