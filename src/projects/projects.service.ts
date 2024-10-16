@@ -63,6 +63,13 @@ export class ProjectsService {
     return { firstPage, lastPage, pageSize, prevPage, nextPage, currentPage };
   }
 
+  private getPhotoUrl = (photoName: string) => {
+    if (process.env.NODE_ENV === 'production') {
+      return process.env.S3_PUBLIC_URL + '/' + photoName;
+    }
+    return `http://localhost:3000/uploads/${photoName}`;
+  };
+
   private async getSimplifiedProjects(
     pageSize: number,
     filters: GetProjectsQuery,
@@ -92,7 +99,9 @@ export class ProjectsService {
     const formattedProjects = projects.map((project) => ({
       ...project,
       photos: undefined,
-      photo: project.photos[0]?.name || null,
+      photo: project.photos[0]?.name
+        ? this.getPhotoUrl(project.photos[0].name)
+        : null,
     }));
 
     return formattedProjects;
