@@ -291,7 +291,7 @@ describe('ProjectsService', () => {
   });
 
   describe('getProjects', () => {
-    it('Should call the genPaginationMeta and getSimplifiedProjects functions', async () => {
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions when the projects do not have to be active', async () => {
       const data = {
         order: new Chance().pickone(['newest', 'oldest']) as
           | 'newest'
@@ -309,7 +309,30 @@ describe('ProjectsService', () => {
       await service['getProjects'](data, false);
 
       expect(genPaginationMeta).toHaveBeenCalled();
-      expect(getSimplifiedProjects).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalledWith(25, data, {});
+    });
+
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions with filters when the projects must be active', async () => {
+      const data = {
+        order: new Chance().pickone(['newest', 'oldest']) as
+          | 'newest'
+          | 'oldest',
+        page: new Chance().integer({ min: 1, max: 1000 }),
+      };
+
+      const genPaginationMeta = jest
+        .spyOn(service as any, 'genPaginationMeta')
+        .mockReturnValue({});
+      const getSimplifiedProjects = jest
+        .spyOn(service as any, 'getSimplifiedProjects')
+        .mockReturnValue({});
+
+      await service['getProjects'](data, true);
+
+      expect(genPaginationMeta).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalledWith(25, data, {
+        active: true,
+      });
     });
   });
 
