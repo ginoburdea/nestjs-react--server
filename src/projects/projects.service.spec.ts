@@ -6,6 +6,7 @@ import { truncateAllTables } from '../test-utils/truncateAllTables';
 import { FileService, LocalFileService } from '../common/files.service';
 import { readFileSync } from 'fs-extra';
 import { resolve } from 'path';
+import { expectValidationError } from '../test-utils/expectValidationError';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -293,6 +294,48 @@ describe('ProjectsService', () => {
 
       expect(genPaginationMeta).toHaveBeenCalled();
       expect(getSimplifiedProjects).toHaveBeenCalled();
+    });
+  });
+
+  describe('getProjectInfo', () => {
+    it('Should get a formatted project by id', async () => {
+      const photosCount = new Chance().integer({ min: 5, max: 25 });
+
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+          photos: {
+            createMany: {
+              data: Array(photosCount)
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const returnedProject = await service['getProjectInfo'](project.id);
+
+      expect(returnedProject).toMatchObject({
+        id: project.id,
+        name: project.name,
+        url: project.url,
+        description: project.description,
+        active: project.active,
+      });
+      expect(returnedProject.photos).toHaveLength(photosCount);
+    });
+
+    it('Should throw an error when the project does not exist', async () => {
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+
+      await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
+        service['getProjectInfo'](fakeProjectId),
+      );
     });
   });
 });
