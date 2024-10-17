@@ -114,10 +114,14 @@ describe('ProjectsService', () => {
           })),
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'newest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount);
       for (const project of simplifiedProjects) {
@@ -138,10 +142,14 @@ describe('ProjectsService', () => {
           })),
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'newest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount);
       for (const project of simplifiedProjects) {
@@ -167,10 +175,14 @@ describe('ProjectsService', () => {
         orderBy: { createdAt: 'desc' },
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'oldest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'oldest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(25);
       expect(simplifiedProjects[0].id).toEqual(allProjects[0].id);
@@ -195,10 +207,14 @@ describe('ProjectsService', () => {
         orderBy: { createdAt: 'desc' },
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 2,
-        order: 'oldest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 2,
+          order: 'oldest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount - 25);
       expect(simplifiedProjects[0].id).toEqual(allProjects[25].id);
@@ -290,7 +306,7 @@ describe('ProjectsService', () => {
         .spyOn(service as any, 'getSimplifiedProjects')
         .mockReturnValue({});
 
-      await service['getProjects'](data);
+      await service['getProjects'](data, false);
 
       expect(genPaginationMeta).toHaveBeenCalled();
       expect(getSimplifiedProjects).toHaveBeenCalled();
