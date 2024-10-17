@@ -55,4 +55,21 @@ describe('ProjectsController', () => {
       expect(res.meta).toEqual(meta);
     });
   });
+
+  describe('getProjectById', () => {
+    it('Should call the getProjectInfo project service and the send the project as a result', async () => {
+      const result = new Chance().string();
+
+      const getProjectInfo = jest
+        .spyOn(projectsService as any, 'getProjectInfo')
+        .mockResolvedValue(result);
+
+      const query = {};
+
+      const res = await controller.getProjectById(query as any);
+
+      expect(getProjectInfo).toHaveBeenCalled();
+      expect(res.project).toEqual(result);
+    });
+  });
 });
