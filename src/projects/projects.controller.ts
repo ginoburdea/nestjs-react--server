@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   Query,
   UploadedFiles,
@@ -14,6 +15,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProjectBody } from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
+import { GetProjectByIdParams } from './dto/get-by-id.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -43,5 +45,12 @@ export class ProjectsController {
   async getProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(query);
     return { results, meta };
+  }
+
+  @Get(':id')
+  @UseGuards(AuthGuard)
+  async getProjectById(@Param() params: GetProjectByIdParams) {
+    const project = await this.projectsService.getProjectInfo(params.id);
+    return { project };
   }
 }
