@@ -75,9 +75,11 @@ export class ProjectsService {
   private async getSimplifiedProjects(
     pageSize: number,
     filters: GetProjectsQuery,
+    prismaFilters: {} | { active: true },
   ) {
     const projects = await this.prisma.projects.findMany({
       take: pageSize,
+      where: prismaFilters,
       skip: pageSize * (filters.page - 1),
       select: {
         id: true,
@@ -109,12 +111,19 @@ export class ProjectsService {
     return formattedProjects;
   }
 
-  async getProjects(filters: GetProjectsQuery) {
+  async getProjects(filters: GetProjectsQuery, mustBeActive: boolean) {
     const pageSize = 25;
 
-    const projectsCount = await this.prisma.projects.count();
+    const prismaFilters = mustBeActive ? { active: true } : {};
+    const projectsCount = await this.prisma.projects.count({
+      where: prismaFilters,
+    });
     const meta = this.genPaginationMeta(filters.page, pageSize, projectsCount);
-    const projects = await this.getSimplifiedProjects(pageSize, filters);
+    const projects = await this.getSimplifiedProjects(
+      pageSize,
+      filters,
+      prismaFilters,
+    );
 
     return { results: projects, meta };
   }
