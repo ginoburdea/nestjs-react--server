@@ -4,6 +4,8 @@ import { FileService } from '../common/files.service';
 import { CreateProjectBody } from './dto/create.dto';
 import { randomUUID } from 'crypto';
 import { GetProjectsQuery } from './dto/get.dto';
+import { ValidationException } from '../common/validation.exception';
+import { merge, pick } from 'remeda';
 
 interface File {
   content: Buffer;
@@ -115,5 +117,37 @@ export class ProjectsService {
     const projects = await this.getSimplifiedProjects(pageSize, filters);
 
     return { results: projects, meta };
+  }
+
+  async getProjectInfo(id: number) {
+    const project = await this.prisma.projects.findFirst({
+      where: {
+        id,
+      },
+      include: {
+        photos: {
+          take: 25,
+          select: {
+            name: true,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!project) throw ValidationException.fromCode('PROJECT_NOT_FOUND', 'id');
+
+    const formattedProject = merge(
+      pick(project, ['id', 'name', 'url', 'description', 'active']),
+      {
+        photos: project.photos
+          .map((photo) => photo.name)
+          .map((photoName) => this.getPhotoUrl(photoName)),
+      },
+    );
+
+    return formattedProject;
   }
 }
