@@ -50,6 +50,15 @@ export class ProjectsController {
     return { results, meta };
   }
 
+  @Get('/public/projects/all')
+  async getPublicProjects(@Query() query: GetProjectsQuery) {
+    const { results, meta } = await this.projectsService.getProjects(
+      query,
+      true,
+    );
+    return { results, meta };
+  }
+
   @Get('/projects/:id')
   @UseGuards(AuthGuard)
   async getProjectById(@Param() params: GetProjectByIdParams) {
