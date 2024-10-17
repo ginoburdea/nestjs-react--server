@@ -87,7 +87,7 @@ describe('ProjectsService', () => {
   });
 
   describe('getSimplifiedProjects', () => {
-    it('Should get projects and a photo for each one', async () => {
+    it('Should get projects and a photo for each one when no prisma filters are provided', async () => {
       const projectsCount = new Chance().integer({ min: 10, max: 25 });
 
       await service['prisma'].projects.createMany({
@@ -126,6 +126,50 @@ describe('ProjectsService', () => {
       expect(simplifiedProjects).toHaveLength(projectsCount);
       for (const project of simplifiedProjects) {
         expect(typeof project.photo).toEqual('string');
+      }
+    });
+
+    it('Should get projects and a photo for each one when prisma filters are provided', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const createdProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+      });
+      await service['prisma'].projectPhotos.createMany({
+        data: createdProjects
+          .map((project) => project.id)
+          .map((projectId) => ({
+            projectId,
+            name:
+              new Chance().string({ length: 8, alpha: true, numeric: true }) +
+              '.png',
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {
+          active: true,
+        },
+      );
+
+      for (const project of simplifiedProjects) {
+        expect(typeof project.photo).toEqual('string');
+        expect(project.active).toEqual(true);
       }
     });
 
