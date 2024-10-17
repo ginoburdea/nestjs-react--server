@@ -17,11 +17,11 @@ import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
 
-@Controller('projects')
+@Controller()
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
-  @Post('')
+  @Post('/projects')
   @HttpCode(200)
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
@@ -40,14 +40,26 @@ export class ProjectsController {
     return { id: project.id };
   }
 
-  @Get('all')
+  @Get('/projects/all')
   @UseGuards(AuthGuard)
   async getProjects(@Query() query: GetProjectsQuery) {
-    const { results, meta } = await this.projectsService.getProjects(query);
+    const { results, meta } = await this.projectsService.getProjects(
+      query,
+      false,
+    );
     return { results, meta };
   }
 
-  @Get(':id')
+  @Get('/public/projects/all')
+  async getPublicProjects(@Query() query: GetProjectsQuery) {
+    const { results, meta } = await this.projectsService.getProjects(
+      query,
+      true,
+    );
+    return { results, meta };
+  }
+
+  @Get('/projects/:id')
   @UseGuards(AuthGuard)
   async getProjectById(@Param() params: GetProjectByIdParams) {
     const project = await this.projectsService.getProjectInfo(params.id);

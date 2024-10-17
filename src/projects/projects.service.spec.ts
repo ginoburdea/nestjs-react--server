@@ -87,7 +87,7 @@ describe('ProjectsService', () => {
   });
 
   describe('getSimplifiedProjects', () => {
-    it('Should get projects and a photo for each one', async () => {
+    it('Should get projects and a photo for each one when no prisma filters are provided', async () => {
       const projectsCount = new Chance().integer({ min: 10, max: 25 });
 
       await service['prisma'].projects.createMany({
@@ -114,14 +114,62 @@ describe('ProjectsService', () => {
           })),
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'newest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount);
       for (const project of simplifiedProjects) {
         expect(typeof project.photo).toEqual('string');
+      }
+    });
+
+    it('Should get projects and a photo for each one when prisma filters are provided', async () => {
+      const projectsCount = new Chance().integer({ min: 10, max: 25 });
+
+      await service['prisma'].projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: new Chance().bool(),
+          })),
+      });
+
+      const createdProjects = await service['prisma'].projects.findMany({
+        select: { id: true },
+      });
+      await service['prisma'].projectPhotos.createMany({
+        data: createdProjects
+          .map((project) => project.id)
+          .map((projectId) => ({
+            projectId,
+            name:
+              new Chance().string({ length: 8, alpha: true, numeric: true }) +
+              '.png',
+          })),
+      });
+
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {
+          active: true,
+        },
+      );
+
+      for (const project of simplifiedProjects) {
+        expect(typeof project.photo).toEqual('string');
+        expect(project.active).toEqual(true);
       }
     });
 
@@ -138,10 +186,14 @@ describe('ProjectsService', () => {
           })),
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'newest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'newest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount);
       for (const project of simplifiedProjects) {
@@ -167,10 +219,14 @@ describe('ProjectsService', () => {
         orderBy: { createdAt: 'desc' },
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 1,
-        order: 'oldest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 1,
+          order: 'oldest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(25);
       expect(simplifiedProjects[0].id).toEqual(allProjects[0].id);
@@ -195,10 +251,14 @@ describe('ProjectsService', () => {
         orderBy: { createdAt: 'desc' },
       });
 
-      const simplifiedProjects = await service['getSimplifiedProjects'](25, {
-        page: 2,
-        order: 'oldest',
-      });
+      const simplifiedProjects = await service['getSimplifiedProjects'](
+        25,
+        {
+          page: 2,
+          order: 'oldest',
+        },
+        {},
+      );
 
       expect(simplifiedProjects).toHaveLength(projectsCount - 25);
       expect(simplifiedProjects[0].id).toEqual(allProjects[25].id);
@@ -275,7 +335,7 @@ describe('ProjectsService', () => {
   });
 
   describe('getProjects', () => {
-    it('Should call the genPaginationMeta and getSimplifiedProjects functions', async () => {
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions when the projects do not have to be active', async () => {
       const data = {
         order: new Chance().pickone(['newest', 'oldest']) as
           | 'newest'
@@ -290,10 +350,33 @@ describe('ProjectsService', () => {
         .spyOn(service as any, 'getSimplifiedProjects')
         .mockReturnValue({});
 
-      await service['getProjects'](data);
+      await service['getProjects'](data, false);
 
       expect(genPaginationMeta).toHaveBeenCalled();
-      expect(getSimplifiedProjects).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalledWith(25, data, {});
+    });
+
+    it('Should call the genPaginationMeta and getSimplifiedProjects functions with filters when the projects must be active', async () => {
+      const data = {
+        order: new Chance().pickone(['newest', 'oldest']) as
+          | 'newest'
+          | 'oldest',
+        page: new Chance().integer({ min: 1, max: 1000 }),
+      };
+
+      const genPaginationMeta = jest
+        .spyOn(service as any, 'genPaginationMeta')
+        .mockReturnValue({});
+      const getSimplifiedProjects = jest
+        .spyOn(service as any, 'getSimplifiedProjects')
+        .mockReturnValue({});
+
+      await service['getProjects'](data, true);
+
+      expect(genPaginationMeta).toHaveBeenCalled();
+      expect(getSimplifiedProjects).toHaveBeenCalledWith(25, data, {
+        active: true,
+      });
     });
   });
 
