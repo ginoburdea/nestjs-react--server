@@ -6,10 +6,16 @@ import { randomUUID } from 'crypto';
 import { GetProjectsQuery } from './dto/get.dto';
 import { ValidationException } from '../common/validation.exception';
 import { merge, pick } from 'remeda';
+import { UpdateProjectBody } from './dto/update.dto';
 
 interface File {
   content: Buffer;
   mimeType: string;
+}
+
+interface UpdateProjectData extends UpdateProjectBody {
+  /** Photos to upload */
+  photos: File[];
 }
 
 @Injectable()
@@ -206,5 +212,18 @@ export class ProjectsService {
     if (!projectExists) {
       throw ValidationException.fromCode('PROJECT_NOT_FOUND', 'id');
     }
+  }
+
+  async update(id: number, updates: UpdateProjectData) {
+    await this.validateProjectId(id);
+    await this.validatePhotoNames(id, updates.photosToDelete || []);
+
+    await this.deletePhotos(updates.photosToDelete || []);
+    await this.uploadPhotos(id, updates.photos || []);
+
+    await this.prisma.projects.update({
+      where: { id },
+      data: pick(updates, ['name', 'url', 'description', 'active']),
+    });
   }
 }
