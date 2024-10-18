@@ -161,6 +161,31 @@ export class ProjectsService {
     return formattedProject;
   }
 
+  private async validatePhotoNames(projectId: number, photoNames: string[]) {
+    const existingPhotos = await this.prisma.projectPhotos.findMany({
+      select: {
+        name: true,
+      },
+      where: {
+        projectId,
+        name: {
+          in: photoNames,
+        },
+      },
+    });
+    const existingPhotosArray = existingPhotos.map((photo) => photo.name);
+
+    for (let i = 0; i < photoNames.length; i++) {
+      if (!existingPhotosArray.includes(photoNames[i])) {
+        throw ValidationException.fromCode(
+          'PHOTO_NOT_FOUND',
+          `photoNames.${i}`,
+        );
+      }
+    }
+  }
+
+
   private async validateProjectId(id: number) {
     const projectExists = await this.prisma.projects.findFirst({
       where: { id },
