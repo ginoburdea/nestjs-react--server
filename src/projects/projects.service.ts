@@ -185,6 +185,17 @@ export class ProjectsService {
     }
   }
 
+  private async deletePhotos(photoNames: string[]) {
+    for (const name of photoNames) await this.fileService.delete(name);
+
+    await this.prisma.projectPhotos.deleteMany({
+      where: {
+        name: {
+          in: photoNames,
+        },
+      },
+    });
+  }
 
   private async validateProjectId(id: number) {
     const projectExists = await this.prisma.projects.findFirst({
