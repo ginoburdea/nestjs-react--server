@@ -160,4 +160,15 @@ export class ProjectsService {
 
     return formattedProject;
   }
+
+  private async validateProjectId(id: number) {
+    const projectExists = await this.prisma.projects.findFirst({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!projectExists) {
+      throw ValidationException.fromCode('PROJECT_NOT_FOUND', 'id');
+    }
+  }
 }
