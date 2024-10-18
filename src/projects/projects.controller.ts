@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
   UploadedFiles,
@@ -16,6 +17,7 @@ import { CreateProjectBody } from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
+import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
 
 @Controller()
 export class ProjectsController {
@@ -64,5 +66,22 @@ export class ProjectsController {
   async getProjectById(@Param() params: GetProjectByIdParams) {
     const project = await this.projectsService.getProjectInfo(params.id);
     return { project };
+  }
+
+  @Patch('/projects/:id')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FilesInterceptor('photos'))
+  async updateProject(
+    @Param() params: UpdateProjectParams,
+    @Body() body: UpdateProjectBody,
+    @UploadedFiles() photos: Express.Multer.File[],
+  ) {
+    await this.projectsService.update(params.id, {
+      ...body,
+      photos: (photos || []).map((photo) => ({
+        content: photo.buffer,
+        mimeType: photo.mimetype,
+      })),
+    });
   }
 }
