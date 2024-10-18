@@ -151,9 +151,10 @@ export class ProjectsService {
     const formattedProject = merge(
       pick(project, ['id', 'name', 'url', 'description', 'active']),
       {
-        photos: project.photos
-          .map((photo) => photo.name)
-          .map((photoName) => this.getPhotoUrl(photoName)),
+        photos: project.photos.map((photo) => ({
+          name: photo.name,
+          url: this.getPhotoUrl(photo.name),
+        })),
       },
     );
 
