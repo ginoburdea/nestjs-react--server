@@ -21,7 +21,9 @@ describe('LocalFileService', () => {
   describe('upload', () => {
     it('Should upload a file to disk', async () => {
       const file = readFileSync(resolve('test/data/photo.png'));
-      const name = new Chance().string({ length: 16 }) + '.png';
+      const name =
+        new Chance().string({ alpha: true, numeric: true, length: 16 }) +
+        '.png';
 
       await service.upload(file, name, 'image/png');
 
@@ -47,7 +49,9 @@ describe('S3FileService', () => {
   describe('upload', () => {
     it('Should upload a file to S3', async () => {
       const file = readFileSync(resolve('test/data/photo.png'));
-      const name = new Chance().string({ length: 16 }) + '.png';
+      const name =
+        new Chance().string({ alpha: true, numeric: true, length: 16 }) +
+        '.png';
 
       await service.upload(file, name, 'image/png');
 
