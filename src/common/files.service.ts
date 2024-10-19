@@ -4,6 +4,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  NotFound,
 } from '@aws-sdk/client-s3';
 
 export abstract class FileService {
@@ -60,6 +61,11 @@ export class S3FileService implements FileService {
       Key: path,
     });
 
-    await this.s3Client.send(deleteCommand);
+    try {
+      await this.s3Client.send(deleteCommand);
+    } catch (error) {
+      if (error instanceof NotFound) return;
+      throw error;
+    }
   }
 }
