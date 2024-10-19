@@ -421,4 +421,71 @@ describe('ProjectsService', () => {
       );
     });
   });
+  describe('validatePhotoNames', () => {
+    it('Should not throw when all the photo names are valid', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+          photos: {
+            createMany: {
+              data: Array(new Chance().integer({ min: 5, max: 25 }))
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const photos = await service['prisma'].projectPhotos.findMany({
+        select: {
+          name: true,
+        },
+        where: {
+          projectId: project.id,
+        },
+      });
+      const photoNames = photos.map((photo) => photo.name);
+
+      const fieldName = new Chance().string({
+        length: 16,
+        alpha: true,
+        numeric: true,
+      });
+
+      let errors = 0;
+      try {
+        await service['validatePhotoNames'](fieldName, project.id, photoNames);
+      } catch {
+        errors++;
+      }
+      expect(errors).toEqual(0);
+    });
+
+    it('Should throw when a photo name is invalid', async () => {
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+      const fakeProtoNames = new Array(
+        new Chance().integer({ min: 1, max: 25 }),
+      )
+        .fill(null)
+        .map(
+          () =>
+            new Chance().string({ length: 16, alpha: true, numeric: true }) +
+            '.png',
+        );
+
+      const fieldName = new Chance().string({
+        length: 16,
+        alpha: true,
+        numeric: true,
+      });
+
+      await expectValidationError(fieldName + '.0', 'PHOTO_NOT_FOUND', () =>
+        service['validatePhotoNames'](fieldName, fakeProjectId, fakeProtoNames),
+      );
+    });
+  });
 });
