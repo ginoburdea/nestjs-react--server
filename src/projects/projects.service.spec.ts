@@ -533,4 +533,32 @@ describe('ProjectsService', () => {
       expect(remainingPhotosCount).toEqual(0);
     });
   });
+
+  describe('validateProjectId', () => {
+    it('Should not throw when the project exists', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+        },
+      });
+
+      let errors = 0;
+      try {
+        await service['validateProjectId'](project.id);
+      } catch {
+        errors++;
+      }
+      expect(errors).toEqual(0);
+    });
+
+    it('Should throw when the project does not exists', async () => {
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+
+      await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
+        service['validateProjectId'](fakeProjectId),
+      );
+    });
+  });
 });
