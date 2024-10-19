@@ -91,4 +91,21 @@ describe('ProjectsController', () => {
       expect(res.project).toEqual(result);
     });
   });
+
+  describe('updateProject', () => {
+    it('Should call the update project service and the send the project as a result', async () => {
+      const update = jest
+        .spyOn(projectsService as any, 'update')
+        .mockResolvedValue(undefined);
+
+      const params = {};
+      const body = {};
+      const photos = [];
+
+      const res = await controller.updateProject(params as any, body, photos);
+
+      expect(update).toHaveBeenCalled();
+      expect(res).toBeUndefined();
+    });
+  });
 });
