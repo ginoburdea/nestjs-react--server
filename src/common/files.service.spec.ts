@@ -31,6 +31,29 @@ describe('LocalFileService', () => {
       expect(fileExists).toEqual(true);
     });
   });
+
+  describe('delete', () => {
+    it('Should delete an existing file', async () => {
+      const file = readFileSync(resolve('test/data/photo.png'));
+      const name =
+        new Chance().string({ alpha: true, numeric: true, length: 16 }) +
+        '.png';
+      await service.upload(file, name, 'image/png');
+
+      await service.delete(name);
+
+      const fileExists = await exists(resolve('.temp/uploads', name));
+      expect(fileExists).toEqual(false);
+    });
+
+    it('Should not do anything if the file does not exist', async () => {
+      const fakeName =
+        new Chance().string({ alpha: true, numeric: true, length: 16 }) +
+        '.png';
+
+      await service.delete(fakeName);
+    });
+  });
 });
 
 describe('S3FileService', () => {
