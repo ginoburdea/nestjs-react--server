@@ -167,7 +167,11 @@ export class ProjectsService {
     return formattedProject;
   }
 
-  private async validatePhotoNames(projectId: number, photoNames: string[]) {
+  private async validatePhotoNames(
+    fieldName: string,
+    projectId: number,
+    photoNames: string[],
+  ) {
     const existingPhotos = await this.prisma.projectPhotos.findMany({
       select: {
         name: true,
@@ -185,7 +189,7 @@ export class ProjectsService {
       if (!existingPhotosArray.includes(photoNames[i])) {
         throw ValidationException.fromCode(
           'PHOTO_NOT_FOUND',
-          `photoNames.${i}`,
+          `${fieldName}.${i}`,
         );
       }
     }
@@ -216,7 +220,11 @@ export class ProjectsService {
 
   async update(id: number, updates: UpdateProjectData) {
     await this.validateProjectId(id);
-    await this.validatePhotoNames(id, updates.photosToDelete || []);
+    await this.validatePhotoNames(
+      'photosToDelete',
+      id,
+      updates.photosToDelete || [],
+    );
 
     await this.deletePhotos(updates.photosToDelete || []);
     await this.uploadPhotos(id, updates.photos || []);
