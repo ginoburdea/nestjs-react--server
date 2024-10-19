@@ -7,6 +7,7 @@ import { FileService, LocalFileService } from '../common/files.service';
 import { readFileSync } from 'fs-extra';
 import { resolve } from 'path';
 import { expectValidationError } from '../test-utils/expectValidationError';
+import { omit } from 'remeda';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -558,6 +559,55 @@ describe('ProjectsService', () => {
 
       await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
         service['validateProjectId'](fakeProjectId),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('Should update the project', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+        },
+      });
+
+      const updates = {
+        name: new Chance().string({ length: 32 }),
+        url: new Chance().url(),
+        active: new Chance().bool(),
+        photos: [],
+        photosToDelete: [],
+      };
+
+      const validateProjectId = jest
+        .spyOn(service as any, 'validateProjectId')
+        .mockReturnValue({});
+      const validatePhotoNames = jest
+        .spyOn(service as any, 'validatePhotoNames')
+        .mockReturnValue({});
+      const deletePhotos = jest
+        .spyOn(service as any, 'deletePhotos')
+        .mockReturnValue({});
+      const uploadPhotos = jest
+        .spyOn(service as any, 'uploadPhotos')
+        .mockReturnValue({});
+
+      await service.update(project.id, updates);
+
+      expect(validateProjectId).toHaveBeenCalled();
+      expect(validatePhotoNames).toHaveBeenCalled();
+      expect(deletePhotos).toHaveBeenCalled();
+      expect(uploadPhotos).toHaveBeenCalled();
+
+      const updatedProject = await service['prisma'].projects.findFirst({
+        where: {
+          id: project.id,
+        },
+      });
+      expect(updatedProject).toMatchObject(
+        omit(updates, ['photos', 'photosToDelete']),
       );
     });
   });
