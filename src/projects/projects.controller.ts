@@ -68,6 +68,7 @@ export class ProjectsController {
     return { project };
   }
 
+  @HttpCode(204)
   @Patch('/projects/:id')
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
