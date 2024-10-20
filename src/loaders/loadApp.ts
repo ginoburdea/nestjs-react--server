@@ -4,9 +4,21 @@ import { ValidationPipe } from '@nestjs/common';
 import { CustomExceptionFilter } from '../common/custom-exception.filter';
 import { validationPipeConfig } from '../config/validationPipe';
 import cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const loadApp = async () => {
   const server = await NestFactory.create(AppModule);
+
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('NestJS React - Domentatie API')
+      .setVersion('1.0')
+      .addCookieAuth('access_token')
+      .build();
+    const swaggerDocumentFactory = () =>
+      SwaggerModule.createDocument(server, swaggerConfig);
+    SwaggerModule.setup('docs', server, swaggerDocumentFactory);
+  }
 
   server.useGlobalPipes(new ValidationPipe(validationPipeConfig));
   server.useGlobalFilters(new CustomExceptionFilter());
