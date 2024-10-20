@@ -5,7 +5,7 @@ import { CreateProjectBody } from './dto/create.dto';
 import { randomUUID } from 'crypto';
 import { GetProjectsQuery } from './dto/get.dto';
 import { ValidationException } from '../common/validation.exception';
-import { merge, pick } from 'remeda';
+import { merge, omit, pick } from 'remeda';
 import { UpdateProjectBody } from './dto/update.dto';
 
 interface File {
@@ -107,8 +107,7 @@ export class ProjectsService {
     });
 
     const formattedProjects = projects.map((project) => ({
-      ...project,
-      photos: undefined,
+      ...omit(project, ['photos']),
       photo: project.photos[0]?.name
         ? this.getPhotoUrl(project.photos[0].name)
         : null,

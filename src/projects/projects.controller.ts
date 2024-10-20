@@ -15,7 +15,7 @@ import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProjectBody, CreateProjectResponse } from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
-import { GetProjectsQuery } from './dto/get.dto';
+import { GetProjectsQuery, GetProjectsResponse } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
 import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
 import {
@@ -57,9 +57,14 @@ export class ProjectsController {
     return { id: project.id };
   }
 
+  @ApiOkResponse({
+    description: 'Proiecte interogate cu succes',
+    type: GetProjectsResponse,
+  })
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @Get('/projects/all')
   @UseGuards(AuthGuard)
-  @ApiCookieAuth()
   async getProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(
       query,
