@@ -2,6 +2,7 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -25,6 +26,14 @@ export class CustomExceptionFilter implements ExceptionFilter {
       res.status(401).json({
         error: 'Neautorizat',
         message: 'Trebuie sa fi logat pentru a efectua aceasta actiune',
+      });
+      return;
+    }
+
+    if (exception instanceof NotFoundException) {
+      res.status(404).json({
+        error: 'Nu exista',
+        message: 'Aceast url nu exista',
       });
       return;
     }
