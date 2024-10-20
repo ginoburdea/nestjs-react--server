@@ -73,6 +73,11 @@ export class ProjectsController {
     return { results, meta };
   }
 
+  @ApiOkResponse({
+    description: 'Proiecte interogate cu succes',
+    type: GetProjectsResponse,
+  })
+  @ApiCommonResponses()
   @Get('/public/projects/all')
   async getPublicProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(
