@@ -153,15 +153,13 @@ export class ProjectsService {
 
     if (!project) throw ValidationException.fromCode('PROJECT_NOT_FOUND', 'id');
 
-    const formattedProject = merge(
-      pick(project, ['id', 'name', 'url', 'description', 'active']),
-      {
-        photos: project.photos.map((photo) => ({
-          name: photo.name,
-          url: this.getPhotoUrl(photo.name),
-        })),
-      },
-    );
+    const formattedProject = {
+      ...pick(project, ['id', 'name', 'url', 'description', 'active']),
+      photos: project.photos.map((photo) => ({
+        name: photo.name,
+        url: this.getPhotoUrl(photo.name),
+      })),
+    };
 
     return formattedProject;
   }

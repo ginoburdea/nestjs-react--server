@@ -16,7 +16,10 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProjectBody, CreateProjectResponse } from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery, GetProjectsResponse } from './dto/get.dto';
-import { GetProjectByIdParams } from './dto/get-by-id.dto';
+import {
+  GetProjectByIdParams,
+  GetProjectByIdResponse,
+} from './dto/get-by-id.dto';
 import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
 import {
   ApiConsumes,
@@ -87,9 +90,14 @@ export class ProjectsController {
     return { results, meta };
   }
 
+  @ApiOkResponse({
+    description: 'Proiect interogat cu succes',
+    type: GetProjectByIdResponse,
+  })
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @Get('/projects/:id')
   @UseGuards(AuthGuard)
-  @ApiCookieAuth()
   async getProjectById(@Param() params: GetProjectByIdParams) {
     const project = await this.projectsService.getProjectInfo(params.id);
     return { project };
