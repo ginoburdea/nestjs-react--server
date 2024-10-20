@@ -12,7 +12,7 @@ export const loadApp = async () => {
   server.useGlobalFilters(new CustomExceptionFilter());
   server.use(cookieParser());
   server.enableCors({
-    origin: process.env.CORS_ORIGINS,
+    origin: process.env.CORS_ORIGINS.split(','),
     credentials: process.env.NODE_ENV !== 'production',
   });
 
