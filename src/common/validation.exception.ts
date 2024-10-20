@@ -5,6 +5,7 @@ export const validationMessages = {
   EMAIL_IN_USE: 'Emailul este deja asociat cu un cont',
   INVALID_CREDENTIALS: 'Adresa de email sau parola este incorecta',
   PROJECT_NOT_FOUND: 'Proiectul nu a fost gasit',
+  PHOTO_NOT_FOUND: 'Nu a fost gasita nicio poza cu acest nume',
 };
 
 export type ValidationExceptionCode = keyof typeof validationMessages;

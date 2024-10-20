@@ -6,10 +6,16 @@ import { randomUUID } from 'crypto';
 import { GetProjectsQuery } from './dto/get.dto';
 import { ValidationException } from '../common/validation.exception';
 import { merge, pick } from 'remeda';
+import { UpdateProjectBody } from './dto/update.dto';
 
 interface File {
   content: Buffer;
   mimeType: string;
+}
+
+interface UpdateProjectData extends UpdateProjectBody {
+  /** Photos to upload */
+  photos: File[];
 }
 
 @Injectable()
@@ -151,12 +157,81 @@ export class ProjectsService {
     const formattedProject = merge(
       pick(project, ['id', 'name', 'url', 'description', 'active']),
       {
-        photos: project.photos
-          .map((photo) => photo.name)
-          .map((photoName) => this.getPhotoUrl(photoName)),
+        photos: project.photos.map((photo) => ({
+          name: photo.name,
+          url: this.getPhotoUrl(photo.name),
+        })),
       },
     );
 
     return formattedProject;
+  }
+
+  private async validatePhotoNames(
+    fieldName: string,
+    projectId: number,
+    photoNames: string[],
+  ) {
+    const existingPhotos = await this.prisma.projectPhotos.findMany({
+      select: {
+        name: true,
+      },
+      where: {
+        projectId,
+        name: {
+          in: photoNames,
+        },
+      },
+    });
+    const existingPhotosArray = existingPhotos.map((photo) => photo.name);
+
+    for (let i = 0; i < photoNames.length; i++) {
+      if (!existingPhotosArray.includes(photoNames[i])) {
+        throw ValidationException.fromCode(
+          'PHOTO_NOT_FOUND',
+          `${fieldName}.${i}`,
+        );
+      }
+    }
+  }
+
+  private async deletePhotos(photoNames: string[]) {
+    for (const name of photoNames) await this.fileService.delete(name);
+
+    await this.prisma.projectPhotos.deleteMany({
+      where: {
+        name: {
+          in: photoNames,
+        },
+      },
+    });
+  }
+
+  private async validateProjectId(id: number) {
+    const projectExists = await this.prisma.projects.findFirst({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!projectExists) {
+      throw ValidationException.fromCode('PROJECT_NOT_FOUND', 'id');
+    }
+  }
+
+  async update(id: number, updates: UpdateProjectData) {
+    await this.validateProjectId(id);
+    await this.validatePhotoNames(
+      'photosToDelete',
+      id,
+      updates.photosToDelete || [],
+    );
+
+    await this.deletePhotos(updates.photosToDelete || []);
+    await this.uploadPhotos(id, updates.photos || []);
+
+    await this.prisma.projects.update({
+      where: { id },
+      data: pick(updates, ['name', 'url', 'description', 'active']),
+    });
   }
 }

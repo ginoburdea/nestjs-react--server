@@ -6,6 +6,8 @@ import { Server } from 'http';
 import { UsersService } from '../src/users/users.service';
 import { resolve } from 'path';
 import { PrismaService } from '../src/common/prisma.service';
+import { ProjectsService } from '../src/projects/projects.service';
+import { readFileSync } from 'fs-extra';
 
 describe('/projects', () => {
   let app: INestApplication;
@@ -199,6 +201,89 @@ describe('/projects', () => {
       const res = await request(server).get(`/projects/${project.id}`);
 
       expect(res.statusCode).toEqual(401);
+    });
+  });
+
+  describe('PATCH /:id', () => {
+    it('Should update a project', async () => {
+      const usersService = app.get(UsersService);
+      const { token } = await usersService.register({
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: process.env.MASTER_PASSWORD,
+      });
+
+      const filePath = resolve('test/data/photo.png');
+
+      const prisma = app.get(PrismaService);
+      const project = await prisma.projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+        },
+      });
+
+      const projectsService = app.get(ProjectsService);
+      await projectsService['uploadPhotos'](
+        project.id,
+        Array(3)
+          .fill(null)
+          .map(() => ({
+            content: readFileSync(filePath),
+            mimeType: 'image/png',
+          })),
+      );
+
+      const photos = await prisma.projectPhotos.findMany({
+        select: {
+          name: true,
+        },
+        where: {
+          projectId: project.id,
+        },
+      });
+      const photoNames = photos.map((photo) => photo.name);
+
+      const projectUpdates = {
+        name: new Chance().string({ length: 32 }),
+        url: new Chance().url(),
+        description: new Chance().string({ length: 128 }),
+        active: new Chance().bool(),
+      };
+
+      const res = await request(server)
+        .patch(`/projects/${project.id}`)
+        .attach('photos', filePath)
+        .attach('photos', filePath)
+        .field('photosToDelete', photoNames)
+        .field('name', projectUpdates.name)
+        .field('url', projectUpdates.url)
+        .field('description', projectUpdates.description)
+        .field('active', projectUpdates.active)
+        .set('Cookie', `access_token=${token}`);
+
+      expect(res.statusCode).toEqual(204);
+
+      const updatedProject = await prisma.projects.findFirst({
+        where: { id: project.id },
+        include: {
+          photos: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      expect(updatedProject).toMatchObject(projectUpdates);
+      expect(updatedProject.photos).toHaveLength(2);
+
+      // Make sure the initial photos were deleted
+      for (const photo of updatedProject.photos) {
+        expect(photoNames).not.toContain(photo);
+      }
     });
   });
 });

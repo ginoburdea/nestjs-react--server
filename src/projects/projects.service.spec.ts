@@ -7,6 +7,7 @@ import { FileService, LocalFileService } from '../common/files.service';
 import { readFileSync } from 'fs-extra';
 import { resolve } from 'path';
 import { expectValidationError } from '../test-utils/expectValidationError';
+import { omit } from 'remeda';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -418,6 +419,195 @@ describe('ProjectsService', () => {
 
       await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
         service['getProjectInfo'](fakeProjectId),
+      );
+    });
+  });
+
+  describe('validatePhotoNames', () => {
+    it('Should not throw when all the photo names are valid', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+          photos: {
+            createMany: {
+              data: Array(new Chance().integer({ min: 5, max: 25 }))
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const photos = await service['prisma'].projectPhotos.findMany({
+        select: {
+          name: true,
+        },
+        where: {
+          projectId: project.id,
+        },
+      });
+      const photoNames = photos.map((photo) => photo.name);
+
+      const fieldName = new Chance().string({
+        length: 16,
+        alpha: true,
+        numeric: true,
+      });
+
+      let errors = 0;
+      try {
+        await service['validatePhotoNames'](fieldName, project.id, photoNames);
+      } catch {
+        errors++;
+      }
+      expect(errors).toEqual(0);
+    });
+
+    it('Should throw when a photo name is invalid', async () => {
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+      const fakeProtoNames = new Array(
+        new Chance().integer({ min: 1, max: 25 }),
+      )
+        .fill(null)
+        .map(
+          () =>
+            new Chance().string({ length: 16, alpha: true, numeric: true }) +
+            '.png',
+        );
+
+      const fieldName = new Chance().string({
+        length: 16,
+        alpha: true,
+        numeric: true,
+      });
+
+      await expectValidationError(fieldName + '.0', 'PHOTO_NOT_FOUND', () =>
+        service['validatePhotoNames'](fieldName, fakeProjectId, fakeProtoNames),
+      );
+    });
+  });
+
+  describe('deletePhotos', () => {
+    it('Should delete the photos both from the database and from the file system', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+          photos: {
+            createMany: {
+              data: Array(new Chance().integer({ min: 5, max: 25 }))
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const photos = await service['prisma'].projectPhotos.findMany({
+        select: {
+          name: true,
+        },
+        where: {
+          projectId: project.id,
+        },
+      });
+      const photoNames = photos.map((photo) => photo.name);
+
+      const deleteFileService = jest
+        .spyOn(service['fileService'], 'delete')
+        .mockReturnValue(undefined);
+
+      await service['deletePhotos'](photoNames);
+
+      expect(deleteFileService).toHaveBeenCalledTimes(photoNames.length);
+
+      const remainingPhotosCount = await service['prisma'].projectPhotos.count({
+        where: { projectId: project.id },
+      });
+      expect(remainingPhotosCount).toEqual(0);
+    });
+  });
+
+  describe('validateProjectId', () => {
+    it('Should not throw when the project exists', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+        },
+      });
+
+      let errors = 0;
+      try {
+        await service['validateProjectId'](project.id);
+      } catch {
+        errors++;
+      }
+      expect(errors).toEqual(0);
+    });
+
+    it('Should throw when the project does not exists', async () => {
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+
+      await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
+        service['validateProjectId'](fakeProjectId),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('Should update the project', async () => {
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: new Chance().bool(),
+        },
+      });
+
+      const updates = {
+        name: new Chance().string({ length: 32 }),
+        url: new Chance().url(),
+        active: new Chance().bool(),
+        photos: [],
+        photosToDelete: [],
+      };
+
+      const validateProjectId = jest
+        .spyOn(service as any, 'validateProjectId')
+        .mockReturnValue({});
+      const validatePhotoNames = jest
+        .spyOn(service as any, 'validatePhotoNames')
+        .mockReturnValue({});
+      const deletePhotos = jest
+        .spyOn(service as any, 'deletePhotos')
+        .mockReturnValue({});
+      const uploadPhotos = jest
+        .spyOn(service as any, 'uploadPhotos')
+        .mockReturnValue({});
+
+      await service.update(project.id, updates);
+
+      expect(validateProjectId).toHaveBeenCalled();
+      expect(validatePhotoNames).toHaveBeenCalled();
+      expect(deletePhotos).toHaveBeenCalled();
+      expect(uploadPhotos).toHaveBeenCalled();
+
+      const updatedProject = await service['prisma'].projects.findFirst({
+        where: {
+          id: project.id,
+        },
+      });
+      expect(updatedProject).toMatchObject(
+        omit(updates, ['photos', 'photosToDelete']),
       );
     });
   });

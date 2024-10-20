@@ -1,9 +1,15 @@
-import { ensureDir, writeFile } from 'fs-extra';
+import { ensureDir, exists, rm, writeFile } from 'fs-extra';
 import { join, resolve } from 'path';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  NotFound,
+} from '@aws-sdk/client-s3';
 
 export abstract class FileService {
   async upload(file: Buffer, name: string, mimeType: string) {}
+  async delete(path: string) {}
 }
 
 export class LocalFileService implements FileService {
@@ -13,6 +19,14 @@ export class LocalFileService implements FileService {
 
     const filePath = join(folderPath, name);
     await writeFile(filePath, file);
+  }
+
+  async delete(path: string) {
+    const filePath = resolve('.temp/uploads', path);
+
+    const fileExists = await exists(filePath);
+
+    if (fileExists) await rm(filePath);
   }
 }
 
@@ -39,5 +53,19 @@ export class S3FileService implements FileService {
     });
 
     await this.s3Client.send(uploadFileCommand);
+  }
+
+  async delete(path: string) {
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: path,
+    });
+
+    try {
+      await this.s3Client.send(deleteCommand);
+    } catch (error) {
+      if (error instanceof NotFound) return;
+      throw error;
+    }
   }
 }
