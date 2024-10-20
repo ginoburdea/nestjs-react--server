@@ -13,15 +13,24 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CreateProjectBody, CreateProjectResponse } from './dto/create.dto';
+import {
+  CreateProjectBody,
+  CreateProjectBodySwagger,
+  CreateProjectResponse,
+} from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery, GetProjectsResponse } from './dto/get.dto';
 import {
   GetProjectByIdParams,
   GetProjectByIdResponse,
 } from './dto/get-by-id.dto';
-import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
 import {
+  UpdateProjectBody,
+  UpdateProjectBodySwagger,
+  UpdateProjectParams,
+} from './dto/update.dto';
+import {
+  ApiBody,
   ApiConsumes,
   ApiCookieAuth,
   ApiNoContentResponse,
@@ -35,6 +44,9 @@ import { ApiCommonResponses } from 'src/common/api-common-responses';
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
+  @ApiBody({
+    type: CreateProjectBodySwagger,
+  })
   @ApiOkResponse({
     description: 'Proiect creat cu succes',
     type: CreateProjectResponse,
@@ -104,6 +116,9 @@ export class ProjectsController {
     return { project };
   }
 
+  @ApiBody({
+    type: UpdateProjectBodySwagger,
+  })
   @ApiNoContentResponse({
     description: 'Proiect actulizat cu succes',
   })

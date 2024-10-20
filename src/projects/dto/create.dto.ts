@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProjectBody {
   @IsString()
@@ -18,6 +19,15 @@ export class CreateProjectBody {
   @IsIn(['true', 'false'])
   @Transform(({ value }) => value === 'true', { toPlainOnly: true })
   active: boolean;
+}
+
+export class CreateProjectBodySwagger extends CreateProjectBody {
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    required: false,
+  })
+  photos?: any[];
 }
 
 export class CreateProjectResponse {
