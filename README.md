@@ -1,85 +1,110 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS React - Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+O server web prin care artistii isi pot construi un site de tip portofoliu:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- Adauga, editeaza, sterg, seteaza proiecte ca ascunse (inactive)
+- Impartasesc cu clientii proiectele vizibile (active)
 
-## Description
+## Instrutiuni de utilizare
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. Cerinte sistem
 
-## Project setup
+Pentru a utliza acest proiect, trebuie sa ai:
 
-```bash
-$ npm install
+- [NodeJS si NPM](https://nodejs.org/en/download/package-manager)
+- [git](https://git-scm.com/downloads)
+- [PostgreSQL](https://www.postgresql.org/download/)
+- [Credentiale AWS S3](https://aws.amazon.com/s3/) sau a unui API compatibil cu acesta (cum ar fi [Clouldflare R2](https://www.cloudflare.com/developer-platform/r2/))
+
+### 2. Descarcare proiect
+
+Deschide un terminal / command prompt si tasteaza urmatoarele comenzi:
+
+```sh
+git clone https://github.com/ginoburdea/nestjs-react--server.git
+cd nestjs-react--server
+npm install
 ```
 
-## Compile and run the project
+### 3. Variabile de environment
 
-```bash
-# development
-$ npm run start
+Copiaza fisierul `.env.example` si pune-i numele `.env` (Acest fisier va fi ignorat de git cand un commit este creat)
 
-# watch mode
-$ npm run start:dev
+Deschide noul fisier si inlocuieste variabilele in functie de instructiunie din acesta.
 
-# production mode
-$ npm run start:prod
+### 4. Comenzi
+
+In functie de obiectivul tau, foloseste una dintre urmatoarele comenzi:
+
+```sh
+# Deschidere in modul de dezvoltare (pentru modificari locale si pentru a vedea schimbarile in timp real)
+npm run start:dev
+
+# Creaza fisiere de tip "build" ce urmeaza a fi folosite in modul de productie
+npm run build
+
+# Deschidere in modul de productie (dupa ce fisierele de tip "build" au fost generate cu comanda de mai sus)
+npm start
+
+# Lint fisisere (aplicarea regulilor eslint pentru o calitate imbunatatia a codului)
+npm run lint
+
+# Formatare fisisere (aplicarea regulilor prettier pentru un aspect placut al codului)
+npm run format
+
+# Rulare teste automate de tip unit si integration
+npm test
+
+# Rulare test automate de tip e2e
+npm run test:e2e
+
+# Rulare teste automate de tip unit si integration in modul de dezvoltare (repornite automata la acutalizarea fisierelor)
+npm run test:watch
 ```
 
-## Run tests
+### 5. Link-uri
 
-```bash
-# unit tests
-$ npm run test
+Linkurile acestui proiect sunt documentate prin Swagger/OpenAPI.
 
-# e2e tests
-$ npm run test:e2e
+Pentru a le accesa, porneste serverul cu in modul de dezvoltare (setand `NODE_ENV=development`), apoi:
 
-# test coverage
-$ npm run test:cov
+- acceseaza ruta `/docs`; sau
+- acceseaza ruta `/docs-json` pentru a vedea documentul in format JSON
+
+## Instructiuni de dezvoltare
+
+### Strategia de branching
+
+Acest proiect utilizeaza strategia [Feature Branch](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow):
+
+Exista un branch `main` unde se afla codul functional si gata de trimis spre productie si cate un branch pentru fiecare task / user story.
+
+1. Se deschide un task in programul de management (in acest caz, [Jira](https://www.atlassian.com/software/jira))
+1. Se creaza un branch pentru acesta
+1. Se implementeaza solutia
+1. Se deshide un Pull Request pe Github
+1. Dupa review, Pull Request-ul se inchide prin strategia "Squash and Merge"
+1. Task-ul este mutat in coloana "Done" in programul de management
+
+### Mesajele pentru git commit
+
+Acest proiect urilizeaza strategia [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) pentru mesajele git commit:
+
+```sh
+git commit -m "<categorie>: <descriere>"
 ```
 
-## Resources
+Categoria poate fi: feat, fix, docs, ci, style, refactor, etc.
+Iar descrierea este un mesaj scurt despre continutul commit-ului.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Bine de stiut
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Aceast server este conceputa pentru un singur artist.
 
-## Support
+Daca mai multi isi fac cont, proiectele adaugate vor putea fi vauzte, editate si sterse si de ceilalti artisti.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Asta poate duce la vulenrabilitati, cum ar fi crearea neautorizata de conturi de care vor putea sterge datele artisului.
 
-## Stay in touch
+De accea, ruta de inregistrare accepta o parola de tip master, care nu va permite crearea de cont de catre oricine.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Aceasta parola poate fi setata prin variabila de enviorment `MASTER_PASSWORD` (vezi punctul 2 la instructiuni de utilizare) sau poate fi lasata goala pentru testare mai rapida locala.
