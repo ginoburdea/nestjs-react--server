@@ -12,6 +12,7 @@ export const loadApp = async () => {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJS React - Domentatie API')
     .setVersion('1.0')
+    .addCookieAuth('access_token')
     .build();
   const swaggerDocumentFactory = () =>
     SwaggerModule.createDocument(server, swaggerConfig);

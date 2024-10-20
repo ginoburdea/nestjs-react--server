@@ -18,7 +18,7 @@ import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
 import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Proiecte')
 @Controller()
@@ -28,6 +28,7 @@ export class ProjectsController {
   @Post('/projects')
   @HttpCode(200)
   @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
     @UploadedFiles() photos: Express.Multer.File[],
@@ -46,6 +47,7 @@ export class ProjectsController {
 
   @Get('/projects/all')
   @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   async getProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(
       query,
@@ -65,6 +67,7 @@ export class ProjectsController {
 
   @Get('/projects/:id')
   @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   async getProjectById(@Param() params: GetProjectByIdParams) {
     const project = await this.projectsService.getProjectInfo(params.id);
     return { project };
@@ -73,6 +76,7 @@ export class ProjectsController {
   @HttpCode(204)
   @Patch('/projects/:id')
   @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @UseInterceptors(FilesInterceptor('photos'))
   async updateProject(
     @Param() params: UpdateProjectParams,
