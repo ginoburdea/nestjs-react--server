@@ -62,6 +62,15 @@ npm run test:e2e
 npm run test:watch
 ```
 
+### 5. Link-uri
+
+Linkurile acestui proiect sunt documentate prin Swagger/OpenAPI.
+
+Pentru a le accesa, porneste serverul cu in modul de dezvoltare (setand `NODE_ENV=development`), apoi:
+
+- acceseaza ruta `/docs`; sau
+- acceseaza ruta `/docs-json` pentru a vedea documentul in format JSON
+
 ## Bine de stiut
 
 Aceast server este conceputa pentru un singur artist.
