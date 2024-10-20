@@ -24,6 +24,7 @@ import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
 import {
   ApiConsumes,
   ApiCookieAuth,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -103,10 +104,15 @@ export class ProjectsController {
     return { project };
   }
 
+  @ApiNoContentResponse({
+    description: 'Proiect actulizat cu succes',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @HttpCode(204)
   @Patch('/projects/:id')
   @UseGuards(AuthGuard)
-  @ApiCookieAuth()
   @UseInterceptors(FilesInterceptor('photos'))
   async updateProject(
     @Param() params: UpdateProjectParams,
