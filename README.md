@@ -71,6 +71,21 @@ Pentru a le accesa, porneste serverul cu in modul de dezvoltare (setand `NODE_EN
 - acceseaza ruta `/docs`; sau
 - acceseaza ruta `/docs-json` pentru a vedea documentul in format JSON
 
+## Instructiuni de dezvoltare
+
+### Strategia de branching
+
+Acest proiect utilizeaza strategia [Feature Branch](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow):
+
+Exista un branch `main` unde se afla codul functional si gata de trimis spre productie si cate un branch pentru fiecare task / user story.
+
+1. Se deschide un task in programul de management (in acest caz, [Jira](https://www.atlassian.com/software/jira))
+1. Se creaza un branch pentru acesta
+1. Se implementeaza solutia
+1. Se deshide un Pull Request pe Github
+1. Dupa review, Pull Request-ul se inchide prin strategia "Squash and Merge"
+1. Task-ul este mutat in coloana "Done" in programul de management 
+
 ## Bine de stiut
 
 Aceast server este conceputa pentru un singur artist.
