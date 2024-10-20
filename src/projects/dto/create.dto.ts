@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateProjectBody {
   @IsString()
@@ -18,4 +18,9 @@ export class CreateProjectBody {
   @IsIn(['true', 'false'])
   @Transform(({ value }) => value === 'true', { toPlainOnly: true })
   active: boolean;
+}
+
+export class CreateProjectResponse {
+  @IsInt()
+  id: number;
 }

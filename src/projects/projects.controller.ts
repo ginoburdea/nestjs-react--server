@@ -13,22 +13,34 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CreateProjectBody } from './dto/create.dto';
+import { CreateProjectBody, CreateProjectResponse } from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
 import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiConsumes,
+  ApiCookieAuth,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/api-common-responses';
 
 @ApiTags('Proiecte')
 @Controller()
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
-  @Post('/projects')
-  @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'Proiect creat cu succes',
+    type: CreateProjectResponse,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses()
   @ApiCookieAuth()
+  @HttpCode(200)
+  @Post('/projects')
+  @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
     @UploadedFiles() photos: Express.Multer.File[],
