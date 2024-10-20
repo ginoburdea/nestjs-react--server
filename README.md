@@ -9,10 +9,12 @@ O server web prin care artistii isi pot construi un site de tip portofoliu:
 
 ### 1. Cerinte sistem
 
-Pentru a utliza acest proiect, trebuie sa ai instalate:
+Pentru a utliza acest proiect, trebuie sa ai:
 
 - [NodeJS si NPM](https://nodejs.org/en/download/package-manager)
 - [git](https://git-scm.com/downloads)
+- [PostgreSQL](https://www.postgresql.org/download/)
+- [Credentiale AWS S3](https://aws.amazon.com/s3/) sau a unui API compatibil cu acesta (cum ar fi [Clouldflare R2](https://www.cloudflare.com/developer-platform/r2/))
 
 ### 2. Descarcare proiect
 
