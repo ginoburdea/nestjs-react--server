@@ -56,6 +56,13 @@ export class UsersController {
     this.sendAuthRes(res, user, token, tokenExpiresAt);
   }
 
+  @ApiOkResponse({
+    description: 'Autentificat cu succes',
+    headers: swaggerAuthResponseHeaders,
+    type: AuthResponse,
+  })
+  @ApiCommonResponses()
+  @HttpCode(200)
   @Post('login')
   async login(@Body() body: LoginBody, @Res() res: Response) {
     const { user, token, tokenExpiresAt } = await this.usersService.login(body);
