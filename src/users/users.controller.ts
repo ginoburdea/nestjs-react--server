@@ -4,7 +4,9 @@ import { RegisterBody } from './dto/register.dto';
 import { Response } from 'express';
 import { Users } from '@prisma/client';
 import { LoginBody } from './dto/login.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Utilizatori')
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}

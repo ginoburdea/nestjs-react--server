@@ -18,7 +18,9 @@ import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery } from './dto/get.dto';
 import { GetProjectByIdParams } from './dto/get-by-id.dto';
 import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Proiecte')
 @Controller()
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
