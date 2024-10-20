@@ -84,7 +84,18 @@ Exista un branch `main` unde se afla codul functional si gata de trimis spre pro
 1. Se implementeaza solutia
 1. Se deshide un Pull Request pe Github
 1. Dupa review, Pull Request-ul se inchide prin strategia "Squash and Merge"
-1. Task-ul este mutat in coloana "Done" in programul de management 
+1. Task-ul este mutat in coloana "Done" in programul de management
+
+### Mesajele pentru git commit
+
+Acest proiect urilizeaza strategia [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) pentru mesajele git commit:
+
+```sh
+git commit -m "<categorie>: <descriere>"
+```
+
+Categoria poate fi: feat, fix, docs, ci, style, refactor, etc.
+Iar descrierea este un mesaj scurt despre continutul commit-ului.
 
 ## Bine de stiut
 
