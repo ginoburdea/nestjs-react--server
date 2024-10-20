@@ -2,8 +2,8 @@
 
 O server web prin care artistii isi pot construi un site de tip portofoliu:
 
--   Adauga, editeaza, sterg, seteaza proiecte ca ascunse (inactive)
--   Impartasesc cu clientii proiectele vizibile (active)
+- Adauga, editeaza, sterg, seteaza proiecte ca ascunse (inactive)
+- Impartasesc cu clientii proiectele vizibile (active)
 
 ## Instrutiuni de utilizare
 
@@ -11,8 +11,8 @@ O server web prin care artistii isi pot construi un site de tip portofoliu:
 
 Pentru a utliza acest proiect, trebuie sa ai instalate:
 
--   [NodeJS si NPM](https://nodejs.org/en/download/package-manager)
--   [git](https://git-scm.com/downloads)
+- [NodeJS si NPM](https://nodejs.org/en/download/package-manager)
+- [git](https://git-scm.com/downloads)
 
 ### 2. Descarcare proiect
 
@@ -59,3 +59,15 @@ npm run test:e2e
 # Rulare teste automate de tip unit si integration in modul de dezvoltare (repornite automata la acutalizarea fisierelor)
 npm run test:watch
 ```
+
+## Bine de stiut
+
+Aceast server este conceputa pentru un singur artist.
+
+Daca mai multi isi fac cont, proiectele adaugate vor putea fi vauzte, editate si sterse si de ceilalti artisti.
+
+Asta poate duce la vulenrabilitati, cum ar fi crearea neautorizata de conturi de care vor putea sterge datele artisului.
+
+De accea, ruta de inregistrare accepta o parola de tip master, care nu va permite crearea de cont de catre oricine.
+
+Aceasta parola poate fi setata prin variabila de enviorment `MASTER_PASSWORD` (vezi punctul 2 la instructiuni de utilizare) sau poate fi lasata goala pentru testare mai rapida locala.
