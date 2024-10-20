@@ -13,18 +13,49 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CreateProjectBody } from './dto/create.dto';
+import {
+  CreateProjectBody,
+  CreateProjectBodySwagger,
+  CreateProjectResponse,
+} from './dto/create.dto';
 import { AuthGuard } from '../common/auth.guard';
-import { GetProjectsQuery } from './dto/get.dto';
-import { GetProjectByIdParams } from './dto/get-by-id.dto';
-import { UpdateProjectBody, UpdateProjectParams } from './dto/update.dto';
+import { GetProjectsQuery, GetProjectsResponse } from './dto/get.dto';
+import {
+  GetProjectByIdParams,
+  GetProjectByIdResponse,
+} from './dto/get-by-id.dto';
+import {
+  UpdateProjectBody,
+  UpdateProjectBodySwagger,
+  UpdateProjectParams,
+} from './dto/update.dto';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiCookieAuth,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/api-common-responses';
 
+@ApiTags('Proiecte')
 @Controller()
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
-  @Post('/projects')
+  @ApiBody({
+    type: CreateProjectBodySwagger,
+  })
+  @ApiOkResponse({
+    description: 'Proiect creat cu succes',
+    type: CreateProjectResponse,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @HttpCode(200)
+  @Post('/projects')
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
@@ -42,6 +73,12 @@ export class ProjectsController {
     return { id: project.id };
   }
 
+  @ApiOkResponse({
+    description: 'Proiecte interogate cu succes',
+    type: GetProjectsResponse,
+  })
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @Get('/projects/all')
   @UseGuards(AuthGuard)
   async getProjects(@Query() query: GetProjectsQuery) {
@@ -52,6 +89,11 @@ export class ProjectsController {
     return { results, meta };
   }
 
+  @ApiOkResponse({
+    description: 'Proiecte interogate cu succes',
+    type: GetProjectsResponse,
+  })
+  @ApiCommonResponses()
   @Get('/public/projects/all')
   async getPublicProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(
@@ -61,6 +103,12 @@ export class ProjectsController {
     return { results, meta };
   }
 
+  @ApiOkResponse({
+    description: 'Proiect interogat cu succes',
+    type: GetProjectByIdResponse,
+  })
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @Get('/projects/:id')
   @UseGuards(AuthGuard)
   async getProjectById(@Param() params: GetProjectByIdParams) {
@@ -68,6 +116,15 @@ export class ProjectsController {
     return { project };
   }
 
+  @ApiBody({
+    type: UpdateProjectBodySwagger,
+  })
+  @ApiNoContentResponse({
+    description: 'Proiect actulizat cu succes',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses()
+  @ApiCookieAuth()
   @HttpCode(204)
   @Patch('/projects/:id')
   @UseGuards(AuthGuard)
