@@ -8,7 +8,6 @@ import {
   Post,
   Query,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -18,7 +17,6 @@ import {
   CreateProjectBodySwagger,
   CreateProjectResponse,
 } from './dto/create.dto';
-import { AuthGuard } from '../common/auth.guard';
 import { GetProjectsQuery, GetProjectsResponse } from './dto/get.dto';
 import {
   GetProjectByIdParams,
@@ -32,12 +30,12 @@ import {
 import {
   ApiBody,
   ApiConsumes,
-  ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiCommonResponses } from '../common/api-common-responses';
+import { RequiresAuth } from '../common/requires-auth';
 
 @ApiTags('Proiecte')
 @Controller()
@@ -53,10 +51,9 @@ export class ProjectsController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiCommonResponses()
-  @ApiCookieAuth()
+  @RequiresAuth()
   @HttpCode(200)
   @Post('/projects')
-  @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
     @UploadedFiles() photos: Express.Multer.File[],
@@ -78,9 +75,8 @@ export class ProjectsController {
     type: GetProjectsResponse,
   })
   @ApiCommonResponses()
-  @ApiCookieAuth()
+  @RequiresAuth()
   @Get('/projects/all')
-  @UseGuards(AuthGuard)
   async getProjects(@Query() query: GetProjectsQuery) {
     const { results, meta } = await this.projectsService.getProjects(
       query,
@@ -108,9 +104,8 @@ export class ProjectsController {
     type: GetProjectByIdResponse,
   })
   @ApiCommonResponses()
-  @ApiCookieAuth()
+  @RequiresAuth()
   @Get('/projects/:id')
-  @UseGuards(AuthGuard)
   async getProjectById(@Param() params: GetProjectByIdParams) {
     const project = await this.projectsService.getProjectInfo(params.id);
     return { project };
@@ -124,10 +119,9 @@ export class ProjectsController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiCommonResponses()
-  @ApiCookieAuth()
+  @RequiresAuth()
   @HttpCode(204)
   @Patch('/projects/:id')
-  @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('photos'))
   async updateProject(
     @Param() params: UpdateProjectParams,
