@@ -27,10 +27,10 @@ describe('ProjectsController', () => {
         .spyOn(projectsService as any, 'createProject')
         .mockResolvedValue({ id });
 
-      const photos = [];
       const body = {};
+      const photos = [];
 
-      const res = await controller.createProject(photos as any, body as any);
+      const res = await controller.createProject(body as any, photos as any);
 
       expect(createProject).toHaveBeenCalled();
       expect(res.id).toEqual(id);
