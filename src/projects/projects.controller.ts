@@ -56,12 +56,12 @@ export class ProjectsController {
   @Post('/projects')
   @UseInterceptors(FilesInterceptor('photos'))
   async createProject(
-    @UploadedFiles() photos: Express.Multer.File[],
     @Body() body: CreateProjectBody,
+    @UploadedFiles() photos?: Express.Multer.File[],
   ) {
     const project = await this.projectsService.createProject({
       ...body,
-      photos: photos.map((photo) => ({
+      photos: (photos || []).map((photo) => ({
         content: photo.buffer,
         mimeType: photo.mimetype,
       })),
@@ -126,7 +126,7 @@ export class ProjectsController {
   async updateProject(
     @Param() params: UpdateProjectParams,
     @Body() body: UpdateProjectBody,
-    @UploadedFiles() photos: Express.Multer.File[],
+    @UploadedFiles() photos?: Express.Multer.File[],
   ) {
     await this.projectsService.update(params.id, {
       ...body,
