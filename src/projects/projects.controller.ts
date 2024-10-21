@@ -111,6 +111,17 @@ export class ProjectsController {
     return { project };
   }
 
+  @ApiOkResponse({
+    description: 'Proiect interogat cu succes',
+    type: GetProjectByIdResponse,
+  })
+  @ApiCommonResponses()
+  @Get('/public/projects/:id')
+  async getPublicProjectById(@Param() params: GetProjectByIdParams) {
+    const project = await this.projectsService.getProjectInfo(params.id, true);
+    return { project };
+  }
+
   @ApiBody({
     type: UpdateProjectBodySwagger,
   })
