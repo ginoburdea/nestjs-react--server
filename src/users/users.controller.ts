@@ -6,7 +6,7 @@ import { Users } from '@prisma/client';
 import { LoginBody } from './dto/login.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthResponse } from './dto/common.dto';
-import { ApiCommonResponses } from 'src/common/api-common-responses';
+import { ApiCommonResponses } from '../common/api-common-responses';
 
 const swaggerAuthResponseHeaders = {
   'Set-Cookie': {
