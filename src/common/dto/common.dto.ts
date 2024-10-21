@@ -10,6 +10,8 @@ class BaseErrorResponse {
 
 export class UnknownErrorResponse extends BaseErrorResponse {}
 
+export class UnauthorizedErrorResponse extends BaseErrorResponse {}
+
 export class ValidationErrorResponse extends BaseErrorResponse {
   /** Cheia este argumentul cu eroare, iar valoarea acestuia este eroarea */
   @IsObject()
