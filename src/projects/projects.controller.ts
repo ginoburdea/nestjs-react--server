@@ -37,7 +37,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiCommonResponses } from 'src/common/api-common-responses';
+import { ApiCommonResponses } from '../common/api-common-responses';
 
 @ApiTags('Proiecte')
 @Controller()
