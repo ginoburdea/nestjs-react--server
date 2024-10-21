@@ -107,7 +107,7 @@ export class ProjectsController {
   @RequiresAuth()
   @Get('/projects/:id')
   async getProjectById(@Param() params: GetProjectByIdParams) {
-    const project = await this.projectsService.getProjectInfo(params.id);
+    const project = await this.projectsService.getProjectInfo(params.id, false);
     return { project };
   }
 
