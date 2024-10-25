@@ -204,6 +204,99 @@ describe('/projects', () => {
     });
   });
 
+  describe(`GET /public/projects/:id`, () => {
+    it('Should get a public project by id', async () => {
+      const usersService = app.get(UsersService);
+      const { token } = await usersService.register({
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: process.env.MASTER_PASSWORD,
+      });
+
+      const prisma = app.get(PrismaService);
+      const photosCount = new Chance().integer({ min: 5, max: 25 });
+      const project = await prisma.projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: true,
+          photos: {
+            createMany: {
+              data: Array(photosCount)
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const res = await request(server)
+        .get(`/public/projects/${project.id}`)
+        .set('Cookie', `access_token=${token}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.project).toMatchObject({
+        id: project.id,
+      });
+    });
+
+    it('Should return an error when the project is inactive', async () => {
+      const usersService = app.get(UsersService);
+      const { token } = await usersService.register({
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: process.env.MASTER_PASSWORD,
+      });
+
+      const prisma = app.get(PrismaService);
+      const photosCount = new Chance().integer({ min: 5, max: 25 });
+      const project = await prisma.projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: false,
+          photos: {
+            createMany: {
+              data: Array(photosCount)
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const res = await request(server)
+        .get(`/public/projects/${project.id}`)
+        .set('Cookie', `access_token=${token}`);
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('Should return an error when the project was not found', async () => {
+      const usersService = app.get(UsersService);
+      const { token } = await usersService.register({
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: process.env.MASTER_PASSWORD,
+      });
+
+      const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
+
+      const res = await request(server)
+        .get(`/public/projects/${fakeProjectId}`)
+        .set('Cookie', `access_token=${token}`);
+
+      expect(res.statusCode).toEqual(400);
+    });
+  });
+
   describe('PATCH /:id', () => {
     it('Should update a project', async () => {
       const usersService = app.get(UsersService);

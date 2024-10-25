@@ -133,10 +133,11 @@ export class ProjectsService {
     return { results: projects, meta };
   }
 
-  async getProjectInfo(id: number) {
+  async getProjectInfo(id: number, mustBeActive: boolean) {
     const project = await this.prisma.projects.findFirst({
       where: {
         id,
+        active: mustBeActive ? true : undefined,
       },
       include: {
         photos: {

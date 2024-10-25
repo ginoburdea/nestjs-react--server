@@ -382,14 +382,14 @@ describe('ProjectsService', () => {
   });
 
   describe('getProjectInfo', () => {
-    it('Should get a formatted project by id', async () => {
+    it('Should get a formatted project by id when the project is inactive', async () => {
       const photosCount = new Chance().integer({ min: 5, max: 25 });
 
       const project = await service['prisma'].projects.create({
         data: {
           name: new Chance().string({ length: 32 }),
           url: new Chance().url(),
-          active: new Chance().bool(),
+          active: false,
           photos: {
             createMany: {
               data: Array(photosCount)
@@ -402,7 +402,45 @@ describe('ProjectsService', () => {
         },
       });
 
-      const returnedProject = await service['getProjectInfo'](project.id);
+      const returnedProject = await service['getProjectInfo'](
+        project.id,
+        false,
+      );
+
+      expect(returnedProject).toMatchObject({
+        id: project.id,
+        name: project.name,
+        url: project.url,
+        description: project.description,
+        active: project.active,
+      });
+      expect(returnedProject.photos).toHaveLength(photosCount);
+    });
+
+    it('Should get a formatted project by id when the project is active', async () => {
+      const photosCount = new Chance().integer({ min: 5, max: 25 });
+
+      const project = await service['prisma'].projects.create({
+        data: {
+          name: new Chance().string({ length: 32 }),
+          url: new Chance().url(),
+          active: true,
+          photos: {
+            createMany: {
+              data: Array(photosCount)
+                .fill(null)
+                .map(() => ({
+                  name: new Chance().string({ length: 32 }) + '.png',
+                })),
+            },
+          },
+        },
+      });
+
+      const returnedProject = await service['getProjectInfo'](
+        project.id,
+        true,
+      );
 
       expect(returnedProject).toMatchObject({
         id: project.id,
@@ -418,7 +456,7 @@ describe('ProjectsService', () => {
       const fakeProjectId = new Chance().integer({ min: 1, max: 1000 });
 
       await expectValidationError('id', 'PROJECT_NOT_FOUND', () =>
-        service['getProjectInfo'](fakeProjectId),
+        service['getProjectInfo'](fakeProjectId, false),
       );
     });
   });

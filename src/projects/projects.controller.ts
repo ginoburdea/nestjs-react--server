@@ -107,7 +107,18 @@ export class ProjectsController {
   @RequiresAuth()
   @Get('/projects/:id')
   async getProjectById(@Param() params: GetProjectByIdParams) {
-    const project = await this.projectsService.getProjectInfo(params.id);
+    const project = await this.projectsService.getProjectInfo(params.id, false);
+    return { project };
+  }
+
+  @ApiOkResponse({
+    description: 'Proiect interogat cu succes',
+    type: GetProjectByIdResponse,
+  })
+  @ApiCommonResponses()
+  @Get('/public/projects/:id')
+  async getPublicProjectById(@Param() params: GetProjectByIdParams) {
+    const project = await this.projectsService.getProjectInfo(params.id, true);
     return { project };
   }
 
