@@ -121,6 +121,44 @@ describe('/projects', () => {
     });
   });
 
+  describe(`GET /public/projects/all`, () => {
+    it('Should get all public projects', async () => {
+      const usersService = app.get(UsersService);
+      const { token } = await usersService.register({
+        name: new Chance().name(),
+        email: new Chance().email().toLowerCase(),
+        password: new Chance().string({ length: 16 }),
+        masterPassword: process.env.MASTER_PASSWORD,
+      });
+
+      const prisma = app.get(PrismaService);
+      const projectsCount = new Chance().integer({ min: 30, max: 50 });
+      await prisma.projects.createMany({
+        data: Array(projectsCount)
+          .fill(null)
+          .map(() => ({
+            name: new Chance().string({ length: 32 }),
+            url: new Chance().url(),
+            active: true,
+          })),
+      });
+
+      const res = await request(server)
+        .get('/public/projects/all')
+        .query({
+          order: new Chance().pickone(['newest', 'oldest']),
+          page: 1,
+        })
+        .set('Cookie', `access_token=${token}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.meta).toMatchObject({
+        currentPage: 1,
+      });
+      expect(res.body.results).toHaveLength(25);
+    });
+  });
+
   describe(`GET /:id`, () => {
     it('Should get a project by id', async () => {
       const usersService = app.get(UsersService);
