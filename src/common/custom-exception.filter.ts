@@ -7,42 +7,15 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ValidationException } from './validation.exception';
-import { SourceLanguageCode, TargetLanguageCode, Translator } from 'deepl-node';
+import { TargetLanguageCode, Translator } from 'deepl-node';
 import acceptLanguage from 'accept-language';
-
-/**
- * The key is the original error and the value is an object with: the key the target language and the value the translated text
- */
-const translationsCache: Record<
-  string,
-  Partial<Record<TargetLanguageCode, string>>
-> = {};
+import { TranslationService } from './translation.service';
 
 @Catch()
 export class CustomExceptionFilter implements ExceptionFilter {
+  constructor(private translationService: TranslationService) {}
+
   private translator = new Translator(process.env.DEEPL_API_KEY);
-
-  private async translate(
-    text: string,
-    sourceLang: SourceLanguageCode,
-    targetLang: TargetLanguageCode,
-  ) {
-    if (!translationsCache[text]) {
-      translationsCache[text] = {};
-    }
-
-    if (!translationsCache[text][targetLang]) {
-      const translationResult = await this.translator.translateText(
-        text,
-        sourceLang,
-        targetLang,
-      );
-
-      translationsCache[text][targetLang] = translationResult.text;
-    }
-
-    return translationsCache[text][targetLang];
-  }
 
   private async translateDetails(
     details: Record<string, string>,
@@ -54,7 +27,11 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
       const formattedError = error.replaceAll('string', 'text');
 
-      translated[key] = await this.translate(formattedError, 'en', targetLang);
+      translated[key] = await this.translationService.translate(
+        formattedError,
+        'en',
+        targetLang,
+      );
     }
     return translated;
   }
@@ -86,8 +63,16 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof ValidationException) {
       res.status(exception.httpStatus).json({
-        error: await this.translate(exception.message, 'ro', targetLang),
-        message: await this.translate(exception.description, 'ro', targetLang),
+        error: await this.translationService.translate(
+          exception.message,
+          'ro',
+          targetLang,
+        ),
+        message: await this.translationService.translate(
+          exception.description,
+          'ro',
+          targetLang,
+        ),
         details: await this.translateDetails(exception.details, targetLang),
       });
       return;
@@ -95,8 +80,12 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof UnauthorizedException) {
       res.status(401).json({
-        error: await this.translate('Neautorizat', 'ro', targetLang),
-        message: await this.translate(
+        error: await this.translationService.translate(
+          'Neautorizat',
+          'ro',
+          targetLang,
+        ),
+        message: await this.translationService.translate(
           'Trebuie sa fi logat pentru a efectua aceasta actiune',
           'ro',
           targetLang,
@@ -107,15 +96,27 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof NotFoundException) {
       res.status(404).json({
-        error: await this.translate('Nu exista', 'ro', targetLang),
-        message: await this.translate('Aceast url nu exista', 'ro', targetLang),
+        error: await this.translationService.translate(
+          'Nu exista',
+          'ro',
+          targetLang,
+        ),
+        message: await this.translationService.translate(
+          'Aceast url nu exista',
+          'ro',
+          targetLang,
+        ),
       });
       return;
     }
 
     res.status(500).send({
-      error: await this.translate('Eroare neasteptata', 'ro', targetLang),
-      message: await this.translate(
+      error: await this.translationService.translate(
+        'Eroare neasteptata',
+        'ro',
+        targetLang,
+      ),
+      message: await this.translationService.translate(
         'A aparut o eroare neasteptata. Va rugam sa incercati mai tarziu',
         'ro',
         targetLang,
