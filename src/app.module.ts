@@ -3,6 +3,11 @@ import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { resolve } from 'path';
+import {
+  DeepLTranslationService,
+  LocalTranslationService,
+  TranslationService,
+} from './common/translation.service';
 
 @Module({
   imports: [
@@ -16,5 +21,14 @@ import { resolve } from 'path';
       : null,
   ].filter((mod) => mod),
   controllers: [],
+  providers: [
+    {
+      provide: TranslationService,
+      useClass:
+        process.env.NODE_ENV === 'development'
+          ? LocalTranslationService
+          : DeepLTranslationService,
+    },
+  ],
 })
 export class AppModule {}

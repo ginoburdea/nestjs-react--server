@@ -5,6 +5,7 @@ import { CustomExceptionFilter } from '../common/custom-exception.filter';
 import { validationPipeConfig } from '../config/validationPipe';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { TranslationService } from '../common/translation.service';
 
 export const loadApp = async () => {
   const server = await NestFactory.create(AppModule);
@@ -21,7 +22,10 @@ export const loadApp = async () => {
   }
 
   server.useGlobalPipes(new ValidationPipe(validationPipeConfig));
-  server.useGlobalFilters(new CustomExceptionFilter());
+
+  const translationService = server.get(TranslationService);
+  server.useGlobalFilters(new CustomExceptionFilter(translationService));
+
   server.use(cookieParser());
   server.enableCors({
     origin: process.env.CORS_ORIGINS.split(','),
