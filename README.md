@@ -32,7 +32,19 @@ Copiaza fisierul `.env.example` si pune-i numele `.env` (Acest fisier va fi igno
 
 Deschide noul fisier si inlocuieste variabilele in functie de instructiunie din acesta.
 
-### 4. Comenzi
+### 4. Migrare baza de date
+
+Ruleaza una dintre comenzile de mai jos pentru a migra data de baze (la creare, baza de date este goala. Comenzile de mai jos creaza tabelele necesare).
+
+```sh
+# In mediu de productie
+npx prisma migrate deploy
+
+# In mediu de prodezvoltare / testare
+npx prisma migrate dev
+```
+
+### 5. Comenzi
 
 In functie de obiectivul tau, foloseste una dintre urmatoarele comenzi:
 
@@ -62,7 +74,7 @@ npm run test:e2e
 npm run test:watch
 ```
 
-### 5. Link-uri
+### 6. Link-uri
 
 Linkurile acestui proiect sunt documentate prin Swagger/OpenAPI.
 
